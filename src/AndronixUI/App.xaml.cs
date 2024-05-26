@@ -1,7 +1,7 @@
 ﻿using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 
-namespace AndronixUI;
+namespace Andronix.UI;
 
 /// <summary>
 /// Provides application-specific behavior to supplement the default Application class.
