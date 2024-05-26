@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "AndronixUI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "AndronixUI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
