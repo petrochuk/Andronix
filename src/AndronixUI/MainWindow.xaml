@@ -18,6 +18,16 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <WebView2 x:Name="_responseView" Grid.Column="0" Grid.Row="0" ></WebView2>
-        <Button x:Name="myButton" Grid.Column="0" Grid.Row="1" Click="myButton_Click">Click Me</Button>
+        <Grid Grid.Column="0" Grid.Row="1" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="myButton" Grid.Column="1" Grid.Row="0" Click="myButton_Click">Click Me</Button>
+        </Grid>
     </Grid>
+    
 </Window>

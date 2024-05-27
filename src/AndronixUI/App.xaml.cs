@@ -14,14 +14,14 @@ public partial class App : Application
     /// </summary>
     public App()
     {
-        this.InitializeComponent();
+        InitializeComponent();
     }
 
     /// <summary>
     /// Invoked when the application is launched.
     /// </summary>
     /// <param name="args">Details about the launch request and process.</param>
-    protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+    protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         _window = new MainWindow();
 
@@ -30,6 +30,7 @@ public partial class App : Application
         {
             presenter.Maximize();
         }
+        _window.Title = "Andronix";
         _window.Activate();
     }
 
