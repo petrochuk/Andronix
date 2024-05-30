@@ -1,0 +1,27 @@
+<Project>
+
+    <ItemGroup Label="Global usings">
+        <Using Include="System" />
+        <Using Include="System.Collections.Generic" />
+        <Using Include="System.Diagnostics" />
+        <Using Include="System.Threading.Tasks" />
+        <Using Include="Microsoft.Extensions.DependencyInjection" />
+        <Using Include="Microsoft.Extensions.Options" />
+    </ItemGroup>
+
+    <PropertyGroup Label="PackageVersions" >
+        <AzureIdentityVersion>1.11.3</AzureIdentityVersion>
+        <MicrosoftExtensionsVersion>8.0.0</MicrosoftExtensionsVersion>
+        <MicrosoftIdentityVersion>4.61.1</MicrosoftIdentityVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsVersion)" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsVersion)" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(MicrosoftExtensionsVersion)" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsVersion)" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsVersion)" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(MicrosoftExtensionsVersion)" />
+    </ItemGroup>
+
+</Project>

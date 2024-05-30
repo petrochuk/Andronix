@@ -26,7 +26,10 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <Button x:Name="myButton" Grid.Column="1" Grid.Row="0" Click="myButton_Click">Click Me</Button>
+            <TextBox x:Name="_promptText" AcceptsReturn="True" 
+                     Grid.Column="0" Grid.Row="0" 
+                     PreviewKeyDown="PromptText_PreviewKeyDown" />
+            <Button x:Name="_goButton" Grid.Column="1" Grid.Row="0" Click="GoButton_Click">Go ▷</Button>
         </Grid>
     </Grid>
     

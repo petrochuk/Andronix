@@ -1,15 +1,13 @@
-using Azure;
+using Andronix.Authentication;
+using Andronix.Core;
 using Azure.AI.OpenAI;
-using System;
 
-namespace Andronix.OpenAI;
+namespace Andronix.AssistantAI;
 
 public class AssistantAIClient: OpenAIClient
 {
-    public AssistantAIClient() 
-        : base(
-            new Uri(Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT")), 
-            new AzureKeyCredential(Environment.GetEnvironmentVariable("AZURE_OPENAI_API_KEY")))
+    public AssistantAIClient(IOptions<CognitiveOptions> cognitiveOptions, AndronixTokenCredential andronixTokenCredential) 
+        : base(cognitiveOptions.Value.EndPoint, andronixTokenCredential)
     {
     }
 }
