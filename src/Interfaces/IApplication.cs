@@ -1,6 +1,6 @@
 ﻿namespace Andronix.Interfaces;
 
-public interface IAppHost
+public interface IApplication
 {
     IntPtr GetMainWindowHandle();
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Kiota.Abstractions.Authentication;
 
 namespace Andronix.Authentication;
 
@@ -9,6 +10,7 @@ public static class ServiceCollectionExtensions
         _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
         services.AddTransient<AndronixTokenCredential>();
+        services.AddTransient<IAuthenticationProvider, GraphAuthenticationProvider>();
 
         return services;
     }

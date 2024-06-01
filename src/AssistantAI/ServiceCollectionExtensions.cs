@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Andronix.Interfaces;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Graph;
 
 namespace Andronix.AssistantAI;
 
@@ -8,7 +10,10 @@ public static class ServiceCollectionExtensions
     {
         _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-        services.AddTransient<AssistantAIClient>();
+        services.AddHostedService<QueuedAssistantService>();
+        services.AddTransient<Assistant>();
+        services.AddTransient<GraphServiceClient>();
+        services.AddSingleton<IBackgroundTaskQueue, AssistantTaskQueue>();
 
         return services;
     }
