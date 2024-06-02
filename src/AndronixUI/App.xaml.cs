@@ -1,4 +1,5 @@
-﻿using Andronix.Interfaces;
+﻿using Andronix.AssistantAI;
+using Andronix.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -13,6 +14,7 @@ namespace Andronix.UI;
 public partial class App : Application, IApplication
 {
     private Window _window;
+    private IntelligenceGatherer _intelligenceGatherer;
 
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
@@ -41,6 +43,8 @@ public partial class App : Application, IApplication
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         _window = Program.Host.Services.GetRequiredService<MainWindow>();
+        _intelligenceGatherer = Program.Host.Services.GetRequiredService<IntelligenceGatherer>();
+        //_intelligenceGatherer.Start();
 
         // Maximize
         if (_window.AppWindow.Presenter is OverlappedPresenter presenter)
@@ -49,6 +53,11 @@ public partial class App : Application, IApplication
         }
         _window.Title = Title;
         _window.Activate();
+    }
+
+    public void OnStopApplication()
+    {
+        _intelligenceGatherer.Stop();
     }
 
     private static IConfiguration LoadConfiguration()

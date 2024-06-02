@@ -2,7 +2,7 @@
 <Application
     x:Class="Andronix.UI.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
     xmlns:local="using:Andronix.UI">
     <Application.Resources>
         <ResourceDictionary>

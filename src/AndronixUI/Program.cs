@@ -30,6 +30,8 @@ internal class Program
 
                 services.AddSingleton<MainWindow>();
                 services.AddSingleton<IDialogPresenter>(provider => provider.GetService<MainWindow>());
+                services.AddSingleton<IntelligenceGatherer>();
+                services.AddSingleton<IntelligenceRepository>();
 
                 services.AddAuthentication(configuration);
                 services.AddAssistantAI(configuration);

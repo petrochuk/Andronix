@@ -45,6 +45,9 @@ public class WinUIHostedService : IHostedService, IDisposable
             // Create a new instance of the application
             ServiceProvider.GetRequiredService<IApplication>();
         });
+
+        var application = ServiceProvider.GetRequiredService<IApplication>();
+        application.OnStopApplication();
         HostApplicationLifetime.StopApplication();
     }
 }

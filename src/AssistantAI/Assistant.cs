@@ -29,8 +29,7 @@ public class Assistant
         IOptions<CognitiveOptions> cognitiveOptions, 
         IOptions<AssistantOptions> assistantOptions,
         AndronixTokenCredential andronixTokenCredential,
-        IAuthenticationProvider authenticationProvider,
-        IBackgroundTaskQueue taskQueue) 
+        IAuthenticationProvider authenticationProvider) 
     {
         _dialogPresenter = dialogPresenter ?? throw new ArgumentNullException(nameof(dialogPresenter));
 
@@ -142,18 +141,21 @@ public class Assistant
         if (_openAiAssistantThread == null)
             throw new InvalidOperationException("Thread not created.");
 
+        _dialogPresenter.UpdateStatus("Sending prompt...");
         await _assistantClient.CreateMessageAsync(_openAiAssistantThread.Id, MessageRole.User, prompt);
         var runResponse = await _assistantClient.CreateRunAsync(
             _openAiAssistantThread.Id,
             new CreateRunOptions(_openAiAssistant.Id));
         
+        var stopWatch = new Stopwatch();
+        stopWatch.Start();
         do
         {
+            _dialogPresenter.UpdateStatus($"Waiting for response...{stopWatch.Elapsed:mm\\:ss}");
             await Task.Delay(TimeSpan.FromMilliseconds(500));
             runResponse = await _assistantClient.GetRunAsync(_openAiAssistantThread.Id, runResponse.Value.Id);
         }
         while (runResponse.Value.Status == RunStatus.Queued || runResponse.Value.Status == RunStatus.InProgress);
-
 
         var afterRunMessagesResponse = await _assistantClient.GetMessagesAsync(_openAiAssistantThread.Id);
         var messages = afterRunMessagesResponse.Value.Data;
@@ -161,6 +163,7 @@ public class Assistant
         var dialogHtml = new StringBuilder();
         dialogHtml.Append("<html><body style='font-family: Consolas; font-size: 14px;'>");
 
+        _dialogPresenter.UpdateStatus("Displaying response...");
         foreach (var threadMessage in messages.Reverse())
         {
             Console.Write($"{threadMessage.CreatedAt:yyyy-MM-dd HH:mm:ss} - {threadMessage.Role,10}: ");
@@ -183,6 +186,7 @@ public class Assistant
         }
 
         _dialogPresenter.ShowDialog(dialogHtml.ToString());
+        _dialogPresenter.UpdateStatus("Ready");
     }
 
     #endregion
