@@ -2,7 +2,6 @@ using Andronix.Authentication;
 using Andronix.Core;
 using Andronix.Interfaces;
 using Azure;
-using Azure.AI.OpenAI;
 using Azure.AI.OpenAI.Assistants;
 using Microsoft.Graph;
 using Microsoft.Kiota.Abstractions.Authentication;
@@ -65,6 +64,7 @@ public class Assistant
         {
             try
             {
+                _dialogPresenter.UpdateStatus("Loading assistant...");
                 var response = await _assistantClient.GetAssistantAsync(_userSettings.Value.AssistantId);
                 _openAiAssistant = response.Value;
                 return;
@@ -76,6 +76,7 @@ public class Assistant
             }
         }
 
+        _dialogPresenter.UpdateStatus("Creating assistant...");
         var creationOptions = new AssistantCreationOptions("gpt-4o")
         {
             Name = _assistantOptions.Name,
@@ -119,12 +120,15 @@ public class Assistant
         if (_openAiAssistant == null)
             throw new InvalidOperationException("Assistant not created.");
 
+        _dialogPresenter.UpdateStatus("Creating thread...");
         var threadOptions = new AssistantThreadCreationOptions();
         var createThreadResponse = await _assistantClient.CreateThreadAsync(threadOptions);
         if (createThreadResponse == null)
             throw new InvalidOperationException("Failed to create thread.");
 
         _openAiAssistantThread = createThreadResponse.Value;
+
+        _dialogPresenter.UpdateStatus("Ready");
     }
 
     #endregion

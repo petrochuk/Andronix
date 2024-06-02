@@ -86,9 +86,23 @@ public sealed partial class MainWindow : Window, IDialogPresenter
 
     public void ShowDialog(string fullDialog)
     {
+        if (DispatcherQueue == null)
+            return;
+
         bool isQueued = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
         {
             _responseView.NavigateToString(fullDialog);
+        });
+    }
+
+    public void UpdateStatus(string status)
+    {
+        if (DispatcherQueue == null)
+            return;
+
+        bool isQueued = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+        {
+            _statusText.Text = status;
         });
     }
 
