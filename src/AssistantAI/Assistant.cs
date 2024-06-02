@@ -38,10 +38,18 @@ public class Assistant
         _assistantOptions = assistantOptions.Value ?? throw new ArgumentNullException(nameof(assistantOptions));
         _userSettings = new Lazy<UserSettings>(() => {
             // Read from local JSON file
-            var userSettings = JsonSerializer.Deserialize<UserSettings>(File.ReadAllText(_assistantOptions.UserSettings));
-            if (userSettings == null)
-                throw new InvalidOperationException($"Failed to read user settings from {_assistantOptions.UserSettings}");
-            return userSettings;
+            try
+            {
+                var userSettings = JsonSerializer.Deserialize(File.ReadAllText(_assistantOptions.UserSettings), SourceGenerationContext.Default.UserSettings);
+                if (userSettings == null)
+                    throw new InvalidOperationException($"Failed to read user settings from {_assistantOptions.UserSettings}");
+                return userSettings;
+            }
+            catch (Exception ex)
+            {
+                _dialogPresenter.UpdateStatus($"Failed to read user settings from {_assistantOptions.UserSettings}: {ex.Message}");
+                throw;
+            }
         });
 
         // Clients
@@ -108,7 +116,7 @@ public class Assistant
         // Save settings to file
         using (var fileStream = File.Create(_assistantOptions.UserSettings))
         {
-            await JsonSerializer.SerializeAsync(fileStream, _userSettings.Value);
+            await JsonSerializer.SerializeAsync(fileStream, _userSettings.Value, SourceGenerationContext.Default.UserSettings);
         }
 
         _openAiAssistant = createResponse.Value;

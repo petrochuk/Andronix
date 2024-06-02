@@ -30,7 +30,7 @@ internal class Program
 
                 services.AddSingleton<MainWindow>();
                 services.AddSingleton<IDialogPresenter>(provider => provider.GetService<MainWindow>());
-                services.AddSingleton<IntelligenceGatherer>();
+                services.AddSingleton<TeamsKnowledgeCollector>();
                 services.AddSingleton<IntelligenceRepository>();
 
                 services.AddAuthentication(configuration);

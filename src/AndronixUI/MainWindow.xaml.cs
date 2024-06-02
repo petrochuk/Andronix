@@ -39,6 +39,7 @@ public sealed partial class MainWindow : Window, IDialogPresenter
     {
         if (_assistant == null)
         {
+            _statusText.Text = "Initializing...";
             _assistant = Program.Host.Services.GetRequiredService<Assistant>();
             _assistantTaskQueue = Program.Host.Services.GetRequiredService<IBackgroundTaskQueue>();
             await _assistantTaskQueue.QueueBackgroundWorkItemAsync(async (cancellationToken) =>

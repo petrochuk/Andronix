@@ -14,7 +14,7 @@ namespace Andronix.UI;
 public partial class App : Application, IApplication
 {
     private Window _window;
-    private IntelligenceGatherer _intelligenceGatherer;
+    private TeamsKnowledgeCollector _intelligenceGatherer;
 
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
@@ -43,8 +43,10 @@ public partial class App : Application, IApplication
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         _window = Program.Host.Services.GetRequiredService<MainWindow>();
-        _intelligenceGatherer = Program.Host.Services.GetRequiredService<IntelligenceGatherer>();
-        //_intelligenceGatherer.Start();
+        _intelligenceGatherer = Program.Host.Services.GetRequiredService<TeamsKnowledgeCollector>();
+#if DEBUG
+        _intelligenceGatherer.Start();
+#endif
 
         // Maximize
         if (_window.AppWindow.Presenter is OverlappedPresenter presenter)

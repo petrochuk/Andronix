@@ -1,18 +1,18 @@
 ﻿using Microsoft.Graph;
 using Microsoft.Graph.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
-using System;
 using System.Text.RegularExpressions;
 
 namespace Andronix.AssistantAI;
 
-public partial class IntelligenceGatherer
+public partial class TeamsKnowledgeCollector
 {
     private GraphServiceClient _graphClient;
     ManualResetEvent _shutdownEvent = new ManualResetEvent(false);
     Thread _thread;
+    Team? _currentTeam;
 
-    public IntelligenceGatherer(IAuthenticationProvider authenticationProvider)
+    public TeamsKnowledgeCollector(IAuthenticationProvider authenticationProvider)
     {
         _thread = new Thread(DoWork);
         _graphClient = new GraphServiceClient(authenticationProvider);
@@ -26,16 +26,74 @@ public partial class IntelligenceGatherer
 
     public void Stop() 
     {
-        _shutdownEvent.Set();
-        _thread.Join();
+        if (!_shutdownEvent.WaitOne(0) && _thread.IsAlive)
+        {
+            _shutdownEvent.Set();
+            _thread.Join();
+        }
     }
 
     public void DoWork()
     {
+        /* TODO: Implement this
+        while (!_shutdownEvent.WaitOne(0))
+        {
+            ReadAllTeamsChannels();
+        }
+        */
+
         while (!_shutdownEvent.WaitOne(0))
         {
             ReadAllChats();
         }
+    }
+
+    private void ReadAllTeamsChannels()
+    {
+        var channels = _graphClient.Me.JoinedTeams.GetAsync().Result;
+        if (channels == null || channels.Value == null)
+            return;
+
+        var pageIterator = PageIterator<Team, TeamCollectionResponse>.CreatePageIterator(_graphClient, channels, ReadTeam);
+        pageIterator.IterateAsync().Wait();
+        if (_shutdownEvent.WaitOne(0))
+            return;
+    }
+
+    private bool ReadTeam(Team team)
+    {
+        Debug.WriteLine($"Team: {team.DisplayName}");
+
+        var channels = _graphClient.Teams[team.Id].Channels.GetAsync().Result;
+        if (channels == null || channels.Value == null)
+            return !_shutdownEvent.WaitOne(0);
+
+        _currentTeam = team;
+        var pageIterator = PageIterator<Channel, ChannelCollectionResponse>.CreatePageIterator(_graphClient, channels, ReadChannel);
+        pageIterator.IterateAsync().Wait();
+
+        return !_shutdownEvent.WaitOne(0);
+    }
+
+    private bool ReadChannel(Channel channel)
+    {
+        if (_currentTeam == null)
+            return false;
+
+        Debug.WriteLine($"Channel: {channel.DisplayName}");
+
+        // Need ChannelMessage.Read.All or ChannelMessage.ReadWrite
+        var channelMessages = _graphClient.Teams[_currentTeam.Id].Channels[channel.Id].Messages.GetAsync((c) =>
+        {
+            c.QueryParameters.Orderby = ["createdDateTime desc"];
+        }).Result;
+        if (channelMessages == null || channelMessages.Value == null)
+            return !_shutdownEvent.WaitOne(0);
+
+        var pageIterator = PageIterator<ChatMessage, ChatMessageCollectionResponse>.CreatePageIterator(_graphClient, channelMessages, ReadChatMessage);
+        pageIterator.IterateAsync().Wait();
+
+        return !_shutdownEvent.WaitOne(0);
     }
 
     private void ReadAllChats()

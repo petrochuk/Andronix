@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="$(AzureIdentityVersion)" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsVersion)" />
     <PackageReference Include="Microsoft.Graph" Version="$(MicrosoftGraphVersion)" />
     <PackageReference Include="Microsoft.Identity.Client" Version="$(MicrosoftIdentityVersion)" />
     <PackageReference Include="Microsoft.Identity.Client.Broker" Version="$(MicrosoftIdentityVersion)" />

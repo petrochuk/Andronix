@@ -29,8 +29,9 @@ internal class GraphAuthenticationProvider : IAuthenticationProvider
 			{
 				appBuilder.WithBroker(new BrokerOptions(BrokerOptions.OperatingSystems.Windows));
 			}
+            appBuilder.WithRedirectUri("http://localhost");
 
-			_publicClientApplication = appBuilder.Build();
+            _publicClientApplication = appBuilder.Build();
 		}
 
 		var result = await _publicClientApplication.AcquireTokenSilent(
