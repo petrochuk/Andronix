@@ -1,5 +1,5 @@
 ﻿namespace Andronix.AssistantAI;
 
-public class IntelligenceRepository
+public class KnowledgeRepository
 {
 }

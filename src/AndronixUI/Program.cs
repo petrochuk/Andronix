@@ -31,7 +31,7 @@ internal class Program
                 services.AddSingleton<MainWindow>();
                 services.AddSingleton<IDialogPresenter>(provider => provider.GetService<MainWindow>());
                 services.AddSingleton<TeamsKnowledgeCollector>();
-                services.AddSingleton<IntelligenceRepository>();
+                services.AddSingleton<KnowledgeRepository>();
 
                 services.AddAuthentication(configuration);
                 services.AddAssistantAI(configuration);

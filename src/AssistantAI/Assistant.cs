@@ -4,6 +4,7 @@ using Andronix.Interfaces;
 using Azure;
 using Azure.AI.OpenAI.Assistants;
 using Microsoft.Graph;
+using Microsoft.Graph.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
 using System.Net;
 using System.Text;
@@ -20,7 +21,7 @@ public class Assistant
     private AssistantsClient _assistantClient;
     private CognitiveOptions _cognitiveOptions;
     private AssistantOptions _assistantOptions;
-    private Lazy<UserSettings> _userSettings;
+    private Lazy<Core.UserSettings> _userSettings;
     private Azure.AI.OpenAI.Assistants.Assistant? _openAiAssistant;
     private Azure.AI.OpenAI.Assistants.AssistantThread? _openAiAssistantThread;
 
@@ -36,7 +37,7 @@ public class Assistant
         // Options and settings
         _cognitiveOptions = cognitiveOptions.Value ?? throw new ArgumentNullException(nameof(cognitiveOptions));
         _assistantOptions = assistantOptions.Value ?? throw new ArgumentNullException(nameof(assistantOptions));
-        _userSettings = new Lazy<UserSettings>(() => {
+        _userSettings = new Lazy<Core.UserSettings>(() => {
             // Read from local JSON file
             try
             {
@@ -204,5 +205,18 @@ public class Assistant
         var user = await _graphClient.Value.Me.GetAsync();
         if (user == null)
             throw new InvalidOperationException("Failed to get user details.");
+    }
+
+    public async Task SendTeamsMessage(string chatId)
+    {
+        var chatMessageToSend = new ChatMessage
+        {
+            Body = new ItemBody
+            {
+                Content = "Hello!",
+            },
+        };
+
+        var chatMessage = await _graphClient.Value.Me.Chats[chatId].Messages.PostAsync(chatMessageToSend);
     }
 }
