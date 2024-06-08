@@ -1,12 +1,14 @@
 using Andronix.Authentication;
 using Andronix.Core;
 using Andronix.Interfaces;
-using Azure;
 using Azure.AI.OpenAI;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
+using OpenAI;
 using OpenAI.Assistants;
+using OpenAI.Files;
+using System.ClientModel;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -26,6 +28,7 @@ public class Assistant
     private Lazy<Core.UserSettings> _userSettings;
     private OpenAI.Assistants.Assistant? _openAiAssistant;
     private OpenAI.Assistants.AssistantThread? _openAiAssistantThread;
+    private OpenAI.Files.FileClient _fileClient;
 
     public Assistant(
         IDialogPresenter dialogPresenter,
@@ -59,6 +62,7 @@ public class Assistant
         // Clients
         _azureOpenAIClient = new AzureOpenAIClient(_cognitiveOptions.EndPoint, andronixTokenCredential);
         _assistantClient = _azureOpenAIClient.GetAssistantClient();
+        _fileClient = _azureOpenAIClient.GetFileClient();
         _graphClient = new Lazy<GraphServiceClient>(() =>
         {
             var graphClient = new GraphServiceClient(authenticationProvider);
@@ -81,7 +85,7 @@ public class Assistant
                 _openAiAssistant = response.Value;
                 return;
             }
-            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+            catch (ClientResultException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
             {
                 // Assistant not found
                 _userSettings.Value.AssistantId = string.Empty;
@@ -92,28 +96,36 @@ public class Assistant
 
         var instructions = new StringBuilder();
         if (string.IsNullOrWhiteSpace(_assistantOptions.Instructions))
-            instructions.AppendLine(@"You are a personal assistant. Your goal is to assist with saving time. 
-                Please, use strategic thinking to provide only truly important information which is relevant to make best possible decisions.
-                Only use facts, avoid opinions unless asked, and avoid stating obvious things. If you are not sure ask clarifying questions.");
+            instructions.AppendLine(@"You are a personal assistant.");
         else
             instructions.AppendLine(File.ReadAllText(_assistantOptions.Instructions));
 
+        if (!string.IsNullOrWhiteSpace(_assistantOptions.AboutMe))
+            instructions.AppendLine(File.ReadAllText(_assistantOptions.AboutMe));
+
+        IList<string>? assistantFiles = null;
         if (_cognitiveOptions.KnowledgeFiles != null && _cognitiveOptions.KnowledgeFiles.Any())
         {
-            instructions.AppendLine($"# Start of useful knowledge from files");
-            foreach (var file in _cognitiveOptions.KnowledgeFiles)
-            {
-                instructions.AppendLine($"## Start of {Path.GetFileName(file)}");
-                instructions.AppendLine(File.ReadAllText(file));
-                instructions.AppendLine($"## End of {Path.GetFileName(file)}");
-            }
-            instructions.AppendLine($"# End of useful knowledge from files");
+            var assistantFilesResult = await _fileClient.GetFilesAsync(OpenAIFilePurpose.Assistants);
+            assistantFiles = assistantFilesResult.Value
+                .Where (x => x.Status == OpenAIFileStatus.Processed)
+                .Select(x => x.Id).ToList();
         }
         var creationOptions = new AssistantCreationOptions()
         {
             Name = _assistantOptions.Name,
             Instructions = instructions.ToString(),
+            ToolResources = new ()
+            {
+                FileSearch = assistantFiles != null ? new() : null
+            }
         };
+
+        if (assistantFiles != null)
+        {
+            creationOptions.Tools.Add(ToolDefinition.CreateFileSearch());
+            creationOptions.ToolResources.FileSearch!.NewVectorStores.Add(new VectorStoreCreationHelper(assistantFiles));
+        }
 
         var createResponse = await _assistantClient.CreateAssistantAsync("gpt-4o", creationOptions);
         _userSettings.Value.AssistantId = createResponse.Value.Id;
@@ -165,8 +177,12 @@ public class Assistant
             _dialogPresenter.UpdateStatus($"Waiting for response...{stopWatch.Elapsed:mm\\:ss}");
             await Task.Delay(TimeSpan.FromMilliseconds(500));
             runResponse = await _assistantClient.GetRunAsync(_openAiAssistantThread.Id, runResponse.Value.Id);
+            if (runResponse.Value.Status == RunStatus.RequiresAction)
+            {
+                _dialogPresenter.UpdateStatus("Working...");
+            }
         }
-        while (runResponse.Value.Status.IsTerminal);
+        while (!runResponse.Value.Status.IsTerminal);
 
         var afterRunMessagesResponse = _assistantClient.GetMessages(_openAiAssistantThread.Id, OpenAI.ListOrder.OldestFirst);
 

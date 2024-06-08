@@ -130,6 +130,9 @@ public partial class TeamsKnowledgeCollector
         if (chatMessage.MessageType != ChatMessageType.Message)
             return !_shutdownEvent.WaitOne(0);
 
+        if (chatMessage.From == null || chatMessage.From.User == null)
+            return !_shutdownEvent.WaitOne(0);
+
         Debug.Write($"{chatMessage.From.User.DisplayName}: ");
         Debug.WriteLine($"{StripHTML(chatMessage.Body.Content)}");
 

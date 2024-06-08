@@ -40,7 +40,7 @@ public class AndronixTokenCredential : TokenCredential
 
     public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return GetTokenAsync(requestContext, cancellationToken).GetAwaiter().GetResult();
     }
 
     public override async ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
