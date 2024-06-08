@@ -12,8 +12,8 @@
     <PropertyGroup Label="PackageVersions" >
         <AzureIdentityVersion>1.11.3</AzureIdentityVersion>
         <MicrosoftExtensionsVersion>8.0.0</MicrosoftExtensionsVersion>
-        <MicrosoftIdentityVersion>4.61.1</MicrosoftIdentityVersion>
-        <MicrosoftGraphVersion>5.55.0</MicrosoftGraphVersion>
+        <MicrosoftIdentityVersion>4.61.3</MicrosoftIdentityVersion>
+        <MicrosoftGraphVersion>5.56.0</MicrosoftGraphVersion>
     </PropertyGroup>
 
     <ItemGroup>

@@ -1,6 +1,5 @@
 using Andronix.AssistantAI;
 using Andronix.Interfaces;
-using Azure.AI.OpenAI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
@@ -15,22 +14,10 @@ public sealed partial class MainWindow : Window, IDialogPresenter
 {
     Assistant? _assistant;
     IBackgroundTaskQueue? _assistantTaskQueue;
-    ChatCompletionsOptions _chatCompletionsOptions = new();
 
     public MainWindow()
     {
         InitializeComponent();
-
-        _chatCompletionsOptions = new ChatCompletionsOptions()
-        {
-            DeploymentName = "gpt-4o",
-            ChoiceCount = 1,
-            Temperature = (float)0,
-            MaxTokens = 4096,
-            NucleusSamplingFactor = (float)0.1,
-            FrequencyPenalty = 0,
-            PresencePenalty = 0,
-        };
 
         AppWindow.SetIcon("assistant.ico");
     }

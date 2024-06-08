@@ -2,10 +2,11 @@ using Andronix.Authentication;
 using Andronix.Core;
 using Andronix.Interfaces;
 using Azure;
-using Azure.AI.OpenAI.Assistants;
+using Azure.AI.OpenAI;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
+using OpenAI.Assistants;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -18,12 +19,13 @@ public class Assistant
 
     private readonly IDialogPresenter _dialogPresenter;
     private Lazy<GraphServiceClient> _graphClient;
-    private AssistantsClient _assistantClient;
+    private AzureOpenAIClient _azureOpenAIClient;
+    private AssistantClient _assistantClient;
     private CognitiveOptions _cognitiveOptions;
     private AssistantOptions _assistantOptions;
     private Lazy<Core.UserSettings> _userSettings;
-    private Azure.AI.OpenAI.Assistants.Assistant? _openAiAssistant;
-    private Azure.AI.OpenAI.Assistants.AssistantThread? _openAiAssistantThread;
+    private OpenAI.Assistants.Assistant? _openAiAssistant;
+    private OpenAI.Assistants.AssistantThread? _openAiAssistantThread;
 
     public Assistant(
         IDialogPresenter dialogPresenter,
@@ -37,7 +39,8 @@ public class Assistant
         // Options and settings
         _cognitiveOptions = cognitiveOptions.Value ?? throw new ArgumentNullException(nameof(cognitiveOptions));
         _assistantOptions = assistantOptions.Value ?? throw new ArgumentNullException(nameof(assistantOptions));
-        _userSettings = new Lazy<Core.UserSettings>(() => {
+        _userSettings = new Lazy<Core.UserSettings>(() => 
+        {
             // Read from local JSON file
             try
             {
@@ -54,7 +57,8 @@ public class Assistant
         });
 
         // Clients
-        _assistantClient = new AssistantsClient(_cognitiveOptions.EndPoint, andronixTokenCredential);
+        _azureOpenAIClient = new AzureOpenAIClient(_cognitiveOptions.EndPoint, andronixTokenCredential);
+        _assistantClient = _azureOpenAIClient.GetAssistantClient();
         _graphClient = new Lazy<GraphServiceClient>(() =>
         {
             var graphClient = new GraphServiceClient(authenticationProvider);
@@ -85,10 +89,6 @@ public class Assistant
         }
 
         _dialogPresenter.UpdateStatus("Creating assistant...");
-        var creationOptions = new AssistantCreationOptions("gpt-4o")
-        {
-            Name = _assistantOptions.Name,
-        };
 
         var instructions = new StringBuilder();
         if (string.IsNullOrWhiteSpace(_assistantOptions.Instructions))
@@ -109,9 +109,13 @@ public class Assistant
             }
             instructions.AppendLine($"# End of useful knowledge from files");
         }
+        var creationOptions = new AssistantCreationOptions()
+        {
+            Name = _assistantOptions.Name,
+            Instructions = instructions.ToString(),
+        };
 
-        creationOptions.Instructions = instructions.ToString();
-        var createResponse = await _assistantClient.CreateAssistantAsync(creationOptions);
+        var createResponse = await _assistantClient.CreateAssistantAsync("gpt-4o", creationOptions);
         _userSettings.Value.AssistantId = createResponse.Value.Id;
 
         // Save settings to file
@@ -129,7 +133,7 @@ public class Assistant
             throw new InvalidOperationException("Assistant not created.");
 
         _dialogPresenter.UpdateStatus("Creating thread...");
-        var threadOptions = new AssistantThreadCreationOptions();
+        var threadOptions = new ThreadCreationOptions();
         var createThreadResponse = await _assistantClient.CreateThreadAsync(threadOptions);
         if (createThreadResponse == null)
             throw new InvalidOperationException("Failed to create thread.");
@@ -151,10 +155,8 @@ public class Assistant
             throw new InvalidOperationException("Thread not created.");
 
         _dialogPresenter.UpdateStatus("Sending prompt...");
-        await _assistantClient.CreateMessageAsync(_openAiAssistantThread.Id, MessageRole.User, prompt);
-        var runResponse = await _assistantClient.CreateRunAsync(
-            _openAiAssistantThread.Id,
-            new CreateRunOptions(_openAiAssistant.Id));
+        await _assistantClient.CreateMessageAsync(_openAiAssistantThread, [MessageContent.FromText(prompt)]);
+        var runResponse = await _assistantClient.CreateRunAsync(_openAiAssistantThread, _openAiAssistant);
         
         var stopWatch = new Stopwatch();
         stopWatch.Start();
@@ -164,32 +166,27 @@ public class Assistant
             await Task.Delay(TimeSpan.FromMilliseconds(500));
             runResponse = await _assistantClient.GetRunAsync(_openAiAssistantThread.Id, runResponse.Value.Id);
         }
-        while (runResponse.Value.Status == RunStatus.Queued || runResponse.Value.Status == RunStatus.InProgress);
+        while (runResponse.Value.Status.IsTerminal);
 
-        var afterRunMessagesResponse = await _assistantClient.GetMessagesAsync(_openAiAssistantThread.Id);
-        var messages = afterRunMessagesResponse.Value.Data;
+        var afterRunMessagesResponse = _assistantClient.GetMessages(_openAiAssistantThread.Id, OpenAI.ListOrder.OldestFirst);
 
         var dialogHtml = new StringBuilder();
         dialogHtml.Append("<html><body style='font-family: Consolas; font-size: 14px;'>");
 
         _dialogPresenter.UpdateStatus("Displaying response...");
-        foreach (var threadMessage in messages.Reverse())
+        foreach (var threadMessage in afterRunMessagesResponse)
         {
             Console.Write($"{threadMessage.CreatedAt:yyyy-MM-dd HH:mm:ss} - {threadMessage.Role,10}: ");
-            foreach (MessageContent contentItem in threadMessage.ContentItems)
+            foreach (MessageContent contentItem in threadMessage.Content)
             {
-                if (contentItem is MessageTextContent textItem)
+                if (!string.IsNullOrWhiteSpace(contentItem.Text))
                 {
                     if (threadMessage.Role == MessageRole.User)
-                        dialogHtml.Append($"<div style='color: blue;'>{textItem.Text.Replace("\n", "<br />")}</div>");
+                        dialogHtml.Append($"<div style='color: blue;'>{contentItem.Text.Replace("\n", "<br />")}</div>");
                     else if (threadMessage.Role == MessageRole.Assistant)
-                        dialogHtml.Append($"<div style='color: green;'>Assistant: {textItem.Text.Replace("\n", "<br />")}</div>");
+                        dialogHtml.Append($"<div style='color: green;'>Assistant: {contentItem.Text.Replace("\n", "<br />")}</div>");
                     else
-                        dialogHtml.Append($"<div style='color: black;'>{textItem.Text.Replace("\n", "<br />")}</div>");
-                }
-                else if (contentItem is MessageImageFileContent imageFileItem)
-                {
-                    Debug.WriteLine($"<image from ID: {imageFileItem.FileId}");
+                        dialogHtml.Append($"<div style='color: black;'>{contentItem.Text.Replace("\n", "<br />")}</div>");
                 }
             }
         }
