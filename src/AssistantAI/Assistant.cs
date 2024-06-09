@@ -1,17 +1,24 @@
+#region Usings
 using Andronix.Authentication;
 using Andronix.Core;
 using Andronix.Interfaces;
 using Azure.AI.OpenAI;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
+using Microsoft.Graph.Models.IdentityGovernance;
 using Microsoft.Kiota.Abstractions.Authentication;
-using OpenAI;
+using Microsoft.VisualStudio.Services.Common;
 using OpenAI.Assistants;
 using OpenAI.Files;
 using System.ClientModel;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+#endregion
 
 namespace Andronix.AssistantAI;
 
@@ -29,6 +36,7 @@ public class Assistant
     private OpenAI.Assistants.Assistant? _openAiAssistant;
     private OpenAI.Assistants.AssistantThread? _openAiAssistantThread;
     private OpenAI.Files.FileClient _fileClient;
+    private readonly Dictionary<string, FunctionToolInstance> _functionsMap = new(StringComparer.OrdinalIgnoreCase);
 
     public Assistant(
         IDialogPresenter dialogPresenter,
@@ -68,6 +76,66 @@ public class Assistant
             var graphClient = new GraphServiceClient(authenticationProvider);
             return graphClient;
         });
+
+        InitializeFunctions();
+    }
+
+    private void InitializeFunctions()
+    {
+        foreach (var method in GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+        {
+            var descriptionAttribute = method.GetCustomAttribute<DescriptionAttribute>();
+            if (descriptionAttribute == null)
+                continue;
+
+            var parameters = new StringBuilder("{ \"type\": \"object\", \"properties\": {");
+            var requiredParameters = new StringBuilder();
+            var firstParameter = true;
+            foreach (var parameter in method.GetParameters())
+            {
+                var parameterDescriptionAttribute = parameter.GetCustomAttribute<DescriptionAttribute>();
+                if (parameterDescriptionAttribute == null)
+                    continue;
+
+                var parameterRequiredAttribute = parameter.GetCustomAttribute<RequiredAttribute>();
+                if (parameterRequiredAttribute != null)
+                {
+                    if (requiredParameters.Length <= 0)
+                        requiredParameters.Append("\"required\": [");
+                    else
+                        requiredParameters.Append(", ");
+
+                    requiredParameters.Append($"\"{parameter.Name}\"");
+                }
+
+                if (!firstParameter)
+                    parameters.Append(", ");
+                else
+                    firstParameter = false;
+
+                parameters.Append($"\"{parameter.Name}\": {{ \"type\": \"{parameter.ParameterType.ToJsonType()}\",\"description\":\"{parameterDescriptionAttribute.Description}\"}}");
+            }
+            parameters.Append($"}}");
+            if (0 < requiredParameters.Length)
+            {
+                requiredParameters.Append("]");
+                parameters.Append($", {requiredParameters}");
+            }
+            parameters.Append($" }}");
+
+            var functionDefinition = new FunctionToolDefinition(method.Name, descriptionAttribute.Description)
+            {
+                Parameters = BinaryData.FromString(parameters.ToString())
+            };
+
+            _functionsMap.Add(method.Name, new FunctionToolInstance
+            {
+                Name = method.Name,
+                Description = descriptionAttribute.Description,
+                MethodInfo = method,
+                Definition = functionDefinition
+            });
+        }
     }
 
     #endregion
@@ -127,6 +195,8 @@ public class Assistant
             creationOptions.ToolResources.FileSearch!.NewVectorStores.Add(new VectorStoreCreationHelper(assistantFiles));
         }
 
+        AddFunctions(creationOptions.Tools);
+
         var createResponse = await _assistantClient.CreateAssistantAsync("gpt-4o", creationOptions);
         _userSettings.Value.AssistantId = createResponse.Value.Id;
 
@@ -137,6 +207,11 @@ public class Assistant
         }
 
         _openAiAssistant = createResponse.Value;
+    }
+
+    private void AddFunctions(IList<ToolDefinition> tools)
+    {
+        tools.AddRange(_functionsMap.Values.Select<FunctionToolInstance, ToolDefinition>(x => x.Definition));
     }
 
     public async Task StartNewThreadAsync()
@@ -179,7 +254,20 @@ public class Assistant
             runResponse = await _assistantClient.GetRunAsync(_openAiAssistantThread.Id, runResponse.Value.Id);
             if (runResponse.Value.Status == RunStatus.RequiresAction)
             {
-                _dialogPresenter.UpdateStatus("Working...");
+                List<ToolOutput> toolOutputs = [];
+
+                foreach (var action in runResponse.Value.RequiredActions)
+                {
+                    if (_functionsMap.TryGetValue(action.FunctionName, out var functionInstance))
+                    {
+                        _dialogPresenter.UpdateStatus($"Executing {action.FunctionName}...");
+                        var functionOutput = await functionInstance.Invoke(this, action.FunctionArguments);
+                        toolOutputs.Add(new ToolOutput(action.ToolCallId, functionOutput));
+                    }
+                }
+
+                // Submit the tool outputs to the assistant, which returns the run to the queued state.
+                runResponse = _assistantClient.SubmitToolOutputsToRun(_openAiAssistantThread.Id, runResponse.Value.Id, toolOutputs);
             }
         }
         while (!runResponse.Value.Status.IsTerminal);
@@ -209,6 +297,22 @@ public class Assistant
 
         _dialogPresenter.ShowDialog(dialogHtml.ToString());
         _dialogPresenter.UpdateStatus("Ready");
+    }
+
+    #endregion
+
+    #region AI Functions
+
+    [Description("Creates new ToDo item")]
+    private Task<string> CreateToDoItem(
+        [Description("Short item title")]
+        string title,
+        [Description("Longer item description without due date or time")]
+        string description,
+        [Description("Suggested due day which can be in date format or relative such as tomorrow, next week etc")]
+        string dueDate)
+    {
+        return Task.FromResult("Done");
     }
 
     #endregion

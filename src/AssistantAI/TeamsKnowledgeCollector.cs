@@ -98,7 +98,10 @@ public partial class TeamsKnowledgeCollector
 
     private void ReadAllChats()
     {
-        var chats = _graphClient.Me.Chats.GetAsync().Result;
+        var chats = _graphClient.Me.Chats.GetAsync((c) => 
+        {
+            c.QueryParameters.Orderby = ["lastMessagePreview/createdDateTime desc"];
+        }).Result;
         if (chats == null || chats.Value == null)
             return;
 
@@ -125,6 +128,8 @@ public partial class TeamsKnowledgeCollector
         return !_shutdownEvent.WaitOne(0);
     }
 
+    List<string> _chatMessages = new List<string>();
+
     private bool ReadChatMessage(ChatMessage chatMessage)
     {
         if (chatMessage.MessageType != ChatMessageType.Message)
@@ -136,7 +141,9 @@ public partial class TeamsKnowledgeCollector
         Debug.Write($"{chatMessage.From.User.DisplayName}: ");
         Debug.WriteLine($"{StripHTML(chatMessage.Body.Content)}");
 
-        Thread.Sleep(500);
+        _chatMessages.Insert(0, $"{chatMessage.From.User.DisplayName}: {StripHTML(chatMessage.Body.Content)}");
+
+        Thread.Sleep(400);
 
         return !_shutdownEvent.WaitOne(0);
     }
