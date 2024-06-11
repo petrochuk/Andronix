@@ -125,6 +125,8 @@ public partial class TeamsKnowledgeCollector
         var pageIterator = PageIterator<ChatMessage, ChatMessageCollectionResponse>.CreatePageIterator(_graphClient, chatMessages, ReadChatMessage);
         pageIterator.IterateAsync().Wait();
 
+        Thread.Sleep(400);
+
         return !_shutdownEvent.WaitOne(0);
     }
 
@@ -143,7 +145,7 @@ public partial class TeamsKnowledgeCollector
 
         _chatMessages.Insert(0, $"{chatMessage.From.User.DisplayName}: {StripHTML(chatMessage.Body.Content)}");
 
-        Thread.Sleep(400);
+        Thread.Sleep(100);
 
         return !_shutdownEvent.WaitOne(0);
     }
