@@ -12,9 +12,9 @@ internal class GraphAuthenticationProvider : IAuthenticationProvider
 	IPublicClientApplication? _publicClientApplication;
     private readonly IOptions<GraphOptions> _graphOptions;
 
-    public GraphAuthenticationProvider(IOptions<GraphOptions> powerPlatformSettings)
+    public GraphAuthenticationProvider(IOptions<GraphOptions> graphOptions)
 	{
-        _graphOptions = powerPlatformSettings ?? throw new ArgumentNullException(nameof(powerPlatformSettings));
+        _graphOptions = graphOptions ?? throw new ArgumentNullException(nameof(graphOptions));
 	}
 
 	async Task IAuthenticationProvider.AuthenticateRequestAsync(RequestInformation request,
@@ -29,7 +29,6 @@ internal class GraphAuthenticationProvider : IAuthenticationProvider
 			{
 				appBuilder.WithBroker(new BrokerOptions(BrokerOptions.OperatingSystems.Windows));
 			}
-            appBuilder.WithRedirectUri("http://localhost");
 
             _publicClientApplication = appBuilder.Build();
 		}

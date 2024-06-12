@@ -1,5 +1,6 @@
 ﻿using Microsoft.Graph;
-using Microsoft.Graph.Models;
+using Microsoft.Graph.Beta;
+using Microsoft.Graph.Beta.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
 using System.Text.RegularExpressions;
 
@@ -35,12 +36,12 @@ public partial class TeamsKnowledgeCollector
 
     public void DoWork()
     {
-        /* TODO: Implement this
+
         while (!_shutdownEvent.WaitOne(0))
         {
             ReadAllTeamsChannels();
         }
-        */
+        
 
         while (!_shutdownEvent.WaitOne(0))
         {
@@ -137,6 +138,7 @@ public partial class TeamsKnowledgeCollector
         if (chatMessage.MessageType != ChatMessageType.Message)
             return !_shutdownEvent.WaitOne(0);
 
+        // Skips messages from applications
         if (chatMessage.From == null || chatMessage.From.User == null)
             return !_shutdownEvent.WaitOne(0);
 

@@ -3,9 +3,8 @@ using Andronix.Authentication;
 using Andronix.Core;
 using Andronix.Interfaces;
 using Azure.AI.OpenAI;
-using Microsoft.Graph;
-using Microsoft.Graph.Models;
-using Microsoft.Graph.Models.IdentityGovernance;
+using Microsoft.Graph.Beta;
+using Microsoft.Graph.Beta.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.VisualStudio.Services.Common;
 using OpenAI.Assistants;
@@ -17,7 +16,6 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 #endregion
 
 namespace Andronix.AssistantAI;

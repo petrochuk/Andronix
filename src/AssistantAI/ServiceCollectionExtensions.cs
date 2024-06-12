@@ -1,6 +1,6 @@
 ﻿using Andronix.Interfaces;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Graph;
+using Microsoft.Graph.Beta;
 
 namespace Andronix.AssistantAI;
 
