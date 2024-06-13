@@ -4,6 +4,7 @@ using Andronix.Core;
 using Andronix.Interfaces;
 using Azure.AI.OpenAI;
 using Markdig;
+using Markdig.Extensions.TaskLists;
 using Microsoft.Graph.Beta;
 using Microsoft.Graph.Beta.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
@@ -11,6 +12,7 @@ using Microsoft.VisualStudio.Services.Common;
 using OpenAI.Assistants;
 using OpenAI.Files;
 using System.ClientModel;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
@@ -302,8 +304,8 @@ public class Assistant
 
     #region AI Functions
 
-    [Description("Creates new To-Do item or Task for the person you are assisting")]
-    private Task<string> CreateToDoItem(
+    [Description("Creates new Task/ToDo for the person you are assisting")]
+    private Task<string> CreateTask(
         [Description("Short item title")]
         string title,
         [Description("Longer item description without due date or time")]
@@ -314,7 +316,7 @@ public class Assistant
         return Task.FromResult("Done");
     }
 
-    [Description("Gets To-Do items or Tasks of the person you are assisting")]
+    [Description("Gets Tasks/ToDos for the person you are assisting")]
     private async Task<string> GetToDoItems(
         [Description("It can be nothing for all, tomorrow, next week etc")]
         string dueDate,
@@ -352,6 +354,44 @@ public class Assistant
         }
 
         return tasksResponse.ToString();
+    }
+
+    [Description("Update Task/ToDo status")]
+    private async Task<string> UpdateTaskStatus(
+        [Description("Task name"), Required]
+        string name,
+        [Description("New due date or empty")]
+        string dueDate,
+        [Description("Done, New, Not Started, In Progress")]
+        string status)
+    {
+        var taskLists = await _graphClient.Value.Me.Todo.Lists.GetAsync();
+        if (taskLists == null || taskLists.Value == null)
+            return "Failed to get tasks.";
+
+        // List all items from Tasks list
+        var list = "Tasks";
+        if (string.IsNullOrWhiteSpace(list))
+            list = "Tasks";
+        var taskList = taskLists.Value.FirstOrDefault(x => x.DisplayName == list);
+        if (taskList == null)
+            return $"'{list}' list not found.";
+
+        var tasks = await _graphClient.Value.Me.Todo.Lists[taskList.Id].Tasks.GetAsync((t) =>
+        {
+            t.QueryParameters.Filter = $"title eq '{name}'";
+        });
+
+        if (tasks == null || tasks.Value == null)
+            return "Failed to get tasks.";
+
+        if (tasks.Value.Count == 0)
+            return "No tasks found.";
+
+        tasks.Value[0].Status = Microsoft.Graph.Beta.Models.TaskStatus.Completed;
+        var res = await _graphClient.Value.Me.Todo.Lists[taskList.Id].Tasks[tasks.Value[0].Id].PatchAsync(tasks.Value[0]);
+
+        return "Done";
     }
 
     #endregion
