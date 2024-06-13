@@ -3,6 +3,7 @@ using Andronix.Authentication;
 using Andronix.Core;
 using Andronix.Interfaces;
 using Azure.AI.OpenAI;
+using Markdig;
 using Microsoft.Graph.Beta;
 using Microsoft.Graph.Beta.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
@@ -284,11 +285,11 @@ public class Assistant
                 if (!string.IsNullOrWhiteSpace(contentItem.Text))
                 {
                     if (threadMessage.Role == MessageRole.User)
-                        dialogHtml.Append($"<div style='color: blue;'>{contentItem.Text.Replace("\n", "<br />")}</div>");
+                        dialogHtml.Append($"<div style='color: blue;'>{Markdown.ToHtml(contentItem.Text)}</div>");
                     else if (threadMessage.Role == MessageRole.Assistant)
-                        dialogHtml.Append($"<div style='color: green;'>Assistant: {contentItem.Text.Replace("\n", "<br />")}</div>");
+                        dialogHtml.Append($"<div style='color: green;'>Assistant: {Markdown.ToHtml(contentItem.Text)}</div>");
                     else
-                        dialogHtml.Append($"<div style='color: black;'>{contentItem.Text.Replace("\n", "<br />")}</div>");
+                        dialogHtml.Append($"<div style='color: black;'>{Markdown.ToHtml(contentItem.Text)}</div>");
                 }
             }
         }
@@ -301,7 +302,7 @@ public class Assistant
 
     #region AI Functions
 
-    [Description("Creates new ToDo item")]
+    [Description("Creates new To-Do item or Task for the person you are assisting")]
     private Task<string> CreateToDoItem(
         [Description("Short item title")]
         string title,
@@ -311,6 +312,46 @@ public class Assistant
         string dueDate)
     {
         return Task.FromResult("Done");
+    }
+
+    [Description("Gets To-Do items or Tasks of the person you are assisting")]
+    private async Task<string> GetToDoItems(
+        [Description("It can be nothing for all, tomorrow, next week etc")]
+        string dueDate,
+        [Description("Task list such as 'Flagged Emails', 'Tasks' or other task lists the person created")]
+        string list,
+        [Description("Optional status: Done, New, In Progress")]
+        string status)
+    {
+        var taskLists = await _graphClient.Value.Me.Todo.Lists.GetAsync();
+        if (taskLists == null || taskLists.Value == null)
+            return "Failed to get tasks.";
+
+        // List all items from Tasks list
+        if (string.IsNullOrWhiteSpace(list))
+            list = "Tasks";
+        var taskList = taskLists.Value.FirstOrDefault(x => x.DisplayName == list);
+        if (taskList == null)
+            return $"'{list}' list not found.";
+
+        var tasks = await _graphClient.Value.Me.Todo.Lists[taskList.Id].Tasks.GetAsync((t) =>
+        {
+            t.QueryParameters.Filter = $"(status eq 'notStarted') or (status eq 'inProgress')";
+        });
+
+        if (tasks == null || tasks.Value == null)
+            return "Failed to get tasks.";
+
+        if (tasks.Value.Count == 0)
+            return "No tasks found.";
+
+        var tasksResponse = new StringBuilder();
+        foreach (var task in tasks.Value)
+        {
+            tasksResponse.AppendLine($"{task.Title}");
+        }
+
+        return tasksResponse.ToString();
     }
 
     #endregion

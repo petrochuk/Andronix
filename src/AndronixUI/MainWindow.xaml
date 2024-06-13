@@ -18,7 +18,9 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <WebView2 x:Name="_responseView" Grid.Column="0" Grid.Row="0" ></WebView2>
+        <WebView2 x:Name="_responseView" Grid.Column="0" Grid.Row="0" 
+            NavigationStarting="ResponseView_NavigationStarting"
+        />
         <Grid Grid.Column="0" Grid.Row="1" >
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>

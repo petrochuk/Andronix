@@ -86,7 +86,7 @@ public partial class TeamsKnowledgeCollector
         // Need ChannelMessage.Read.All or ChannelMessage.ReadWrite
         var channelMessages = _graphClient.Teams[_currentTeam.Id].Channels[channel.Id].Messages.GetAsync((c) =>
         {
-            c.QueryParameters.Orderby = ["createdDateTime desc"];
+            //c.QueryParameters.Orderby = ["createdDateTime desc"];
         }).Result;
         if (channelMessages == null || channelMessages.Value == null)
             return !_shutdownEvent.WaitOne(0);

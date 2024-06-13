@@ -70,6 +70,17 @@ public sealed partial class MainWindow : Window, IDialogPresenter
         }
     }
 
+    private async void ResponseView_NavigationStarting(Microsoft.UI.Xaml.Controls.WebView2 sender, 
+        Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs args)
+    {
+        var uri = new Uri(args.Uri);
+        if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)
+            return;
+
+        args.Cancel = true;
+        _ = await Launcher.LaunchUriAsync(uri);
+    }
+
     #region IDialogPresenter
 
     public void ShowDialog(string fullDialog)
@@ -95,4 +106,5 @@ public sealed partial class MainWindow : Window, IDialogPresenter
     }
 
     #endregion
+
 }
