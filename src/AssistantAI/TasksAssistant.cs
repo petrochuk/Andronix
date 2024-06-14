@@ -1,13 +1,9 @@
 ﻿using Andronix.Interfaces;
-using Azure;
-using Markdig.Extensions.TaskLists;
 using Microsoft.Graph.Beta;
 using Microsoft.Graph.Beta.Models;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Andronix.AssistantAI;
 
@@ -49,7 +45,7 @@ public class TasksAssistant : ISpecializedAssistant
         if (taskListResponse.taskList == null)
             return taskListResponse.response;
 
-        var res = await _graphClient.Me.Todo.Lists[taskListResponse.taskList.Id].Tasks.PostAsync(new TodoTask
+        var task = new TodoTask
         {
             Title = title,
             Body = new ItemBody
@@ -62,7 +58,8 @@ public class TasksAssistant : ISpecializedAssistant
                 DateTime = DateTime.Now.AddDays(1).ToString("yyyy-MM-ddTHH:mm:ss"),
                 TimeZone = TimeZoneInfo.Local.Id
             }
-        });
+        };
+        var result = await _graphClient.Me.Todo.Lists[taskListResponse.taskList.Id].Tasks.PostAsync(task);
 
         return "Done";
     }
@@ -89,7 +86,8 @@ public class TasksAssistant : ISpecializedAssistant
 
         var tasks = await _graphClient.Me.Todo.Lists[taskList.Id].Tasks.GetAsync((t) =>
         {
-            t.QueryParameters.Filter = $"(status eq 'notStarted') or (status eq 'inProgress')";
+            t.QueryParameters.Orderby = ["dueDateTime/dateTime asc"];
+            t.QueryParameters.Filter = $"status ne 'completed'";
         });
 
         if (tasks == null || tasks.Value == null)
@@ -130,17 +128,19 @@ public class TasksAssistant : ISpecializedAssistant
 
         var tasks = await _graphClient.Me.Todo.Lists[taskList.Id].Tasks.GetAsync((t) =>
         {
-            t.QueryParameters.Filter = $"title eq '{name}'";
+            t.QueryParameters.Filter = $"title eq '{Uri.EscapeDataString(name)}' and status ne 'completed'";
         });
-
         if (tasks == null || tasks.Value == null)
             return "Failed to get tasks.";
 
         if (tasks.Value.Count == 0)
-            return "No tasks found.";
+            return $"Task '{name}' was not found.";
 
         tasks.Value[0].Status = Microsoft.Graph.Beta.Models.TaskStatus.Completed;
-        var res = await _graphClient.Me.Todo.Lists[taskList.Id].Tasks[tasks.Value[0].Id].PatchAsync(tasks.Value[0]);
+        if (tasks.Value[0].Recurrence?.Range?.Type == RecurrenceRangeType.NoEnd)
+            tasks.Value[0].Recurrence.Range = null;
+        
+        var result = await _graphClient.Me.Todo.Lists[taskList.Id].Tasks[tasks.Value[0].Id].PatchAsync(tasks.Value[0]);
 
         return "Done";
     }
