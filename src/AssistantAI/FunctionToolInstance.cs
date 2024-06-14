@@ -1,4 +1,5 @@
-﻿using OpenAI.Assistants;
+﻿using Andronix.Core;
+using OpenAI.Assistants;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
@@ -23,7 +24,7 @@ public class FunctionToolInstance
             return await result.ConfigureAwait(false);
         }
 
-        var arguments = JsonSerializer.Deserialize<Dictionary<string, string>>(argumentsJson);
+        var arguments = JsonSerializer.Deserialize<Dictionary<string, string>>(argumentsJson, SourceGenerationContext.Default.DictionaryStringString);
         if (arguments == null)
         {
             result = (Task<string>)MethodInfo.Invoke(instance, null)!;
