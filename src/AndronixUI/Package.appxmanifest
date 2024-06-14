@@ -9,14 +9,14 @@
 
   <Identity
     Name="52c0c490-7f1a-4331-903c-9d9cf7478fc5"
-    Publisher="CN=anpetroc"
+    Publisher="CN=petrochuk"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="52c0c490-7f1a-4331-903c-9d9cf7478fc5" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>AndronixUI</DisplayName>
-    <PublisherDisplayName>anpetroc</PublisherDisplayName>
+    <DisplayName>Andronix</DisplayName>
+    <PublisherDisplayName>Andrew Petrochuk</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
