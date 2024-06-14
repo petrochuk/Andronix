@@ -1,6 +1,7 @@
 ﻿using Andronix.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Graph.Beta;
+using Microsoft.Kiota.Abstractions.Authentication;
 
 namespace Andronix.AssistantAI;
 
@@ -12,7 +13,8 @@ public static class ServiceCollectionExtensions
 
         services.AddHostedService<QueuedAssistantService>();
         services.AddTransient<Assistant>();
-        services.AddTransient<GraphServiceClient>();
+        services.AddTransient(s => new GraphServiceClient(s.GetRequiredService<IAuthenticationProvider>()));
+        services.AddTransient<TasksAssistant>();
         services.AddSingleton<IBackgroundTaskQueue, AssistantTaskQueue>();
 
         return services;

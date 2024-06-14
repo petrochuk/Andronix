@@ -4,7 +4,6 @@ using Andronix.Core;
 using Andronix.Interfaces;
 using Azure.AI.OpenAI;
 using Markdig;
-using Markdig.Extensions.TaskLists;
 using Microsoft.Graph.Beta;
 using Microsoft.Graph.Beta.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
@@ -12,7 +11,6 @@ using Microsoft.VisualStudio.Services.Common;
 using OpenAI.Assistants;
 using OpenAI.Files;
 using System.ClientModel;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
@@ -38,12 +36,14 @@ public class Assistant
     private OpenAI.Assistants.AssistantThread? _openAiAssistantThread;
     private OpenAI.Files.FileClient _fileClient;
     private readonly Dictionary<string, FunctionToolInstance> _functionsMap = new(StringComparer.OrdinalIgnoreCase);
+    private TasksAssistant _tasksAssistant;
 
     public Assistant(
         IDialogPresenter dialogPresenter,
         IOptions<CognitiveOptions> cognitiveOptions, 
         IOptions<AssistantOptions> assistantOptions,
         AndronixTokenCredential andronixTokenCredential,
+        TasksAssistant tasksAssistant,
         IAuthenticationProvider authenticationProvider) 
     {
         _dialogPresenter = dialogPresenter ?? throw new ArgumentNullException(nameof(dialogPresenter));
@@ -78,12 +78,20 @@ public class Assistant
             return graphClient;
         });
 
+        _tasksAssistant = tasksAssistant;
+
         InitializeFunctions();
     }
 
     private void InitializeFunctions()
     {
-        foreach (var method in GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+        InitializeFunctions(this);
+        InitializeFunctions(_tasksAssistant);
+    }
+
+    private void InitializeFunctions(object typeInstance)
+    {
+        foreach (var method in typeInstance.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
         {
             var descriptionAttribute = method.GetCustomAttribute<DescriptionAttribute>();
             if (descriptionAttribute == null)
@@ -133,6 +141,7 @@ public class Assistant
             {
                 Name = method.Name,
                 Description = descriptionAttribute.Description,
+                TypeInstance = typeInstance,
                 MethodInfo = method,
                 Definition = functionDefinition
             });
@@ -262,7 +271,7 @@ public class Assistant
                     if (_functionsMap.TryGetValue(action.FunctionName, out var functionInstance))
                     {
                         _dialogPresenter.UpdateStatus($"Executing {action.FunctionName}...");
-                        var functionOutput = await functionInstance.Invoke(this, action.FunctionArguments);
+                        var functionOutput = await functionInstance.Invoke(action.FunctionArguments);
                         toolOutputs.Add(new ToolOutput(action.ToolCallId, functionOutput));
                     }
                 }
@@ -304,95 +313,6 @@ public class Assistant
 
     #region AI Functions
 
-    [Description("Creates new Task/ToDo for the person you are assisting")]
-    private Task<string> CreateTask(
-        [Description("Short item title")]
-        string title,
-        [Description("Longer item description without due date or time")]
-        string description,
-        [Description("Suggested due day which can be in date format or relative such as tomorrow, next week etc")]
-        string dueDate)
-    {
-        return Task.FromResult("Done");
-    }
-
-    [Description("Gets Tasks/ToDos for the person you are assisting")]
-    private async Task<string> GetToDoItems(
-        [Description("It can be nothing for all, tomorrow, next week etc")]
-        string dueDate,
-        [Description("Task list such as 'Flagged Emails', 'Tasks' or other task lists the person created")]
-        string list,
-        [Description("Optional status: Done, New, In Progress")]
-        string status)
-    {
-        var taskLists = await _graphClient.Value.Me.Todo.Lists.GetAsync();
-        if (taskLists == null || taskLists.Value == null)
-            return "Failed to get tasks.";
-
-        // List all items from Tasks list
-        if (string.IsNullOrWhiteSpace(list))
-            list = "Tasks";
-        var taskList = taskLists.Value.FirstOrDefault(x => x.DisplayName == list);
-        if (taskList == null)
-            return $"'{list}' list not found.";
-
-        var tasks = await _graphClient.Value.Me.Todo.Lists[taskList.Id].Tasks.GetAsync((t) =>
-        {
-            t.QueryParameters.Filter = $"(status eq 'notStarted') or (status eq 'inProgress')";
-        });
-
-        if (tasks == null || tasks.Value == null)
-            return "Failed to get tasks.";
-
-        if (tasks.Value.Count == 0)
-            return "No tasks found.";
-
-        var tasksResponse = new StringBuilder();
-        foreach (var task in tasks.Value)
-        {
-            tasksResponse.AppendLine($"{task.Title}");
-        }
-
-        return tasksResponse.ToString();
-    }
-
-    [Description("Update Task/ToDo status")]
-    private async Task<string> UpdateTaskStatus(
-        [Description("Task name"), Required]
-        string name,
-        [Description("New due date or empty")]
-        string dueDate,
-        [Description("Done, New, Not Started, In Progress")]
-        string status)
-    {
-        var taskLists = await _graphClient.Value.Me.Todo.Lists.GetAsync();
-        if (taskLists == null || taskLists.Value == null)
-            return "Failed to get tasks.";
-
-        // List all items from Tasks list
-        var list = "Tasks";
-        if (string.IsNullOrWhiteSpace(list))
-            list = "Tasks";
-        var taskList = taskLists.Value.FirstOrDefault(x => x.DisplayName == list);
-        if (taskList == null)
-            return $"'{list}' list not found.";
-
-        var tasks = await _graphClient.Value.Me.Todo.Lists[taskList.Id].Tasks.GetAsync((t) =>
-        {
-            t.QueryParameters.Filter = $"title eq '{name}'";
-        });
-
-        if (tasks == null || tasks.Value == null)
-            return "Failed to get tasks.";
-
-        if (tasks.Value.Count == 0)
-            return "No tasks found.";
-
-        tasks.Value[0].Status = Microsoft.Graph.Beta.Models.TaskStatus.Completed;
-        var res = await _graphClient.Value.Me.Todo.Lists[taskList.Id].Tasks[tasks.Value[0].Id].PatchAsync(tasks.Value[0]);
-
-        return "Done";
-    }
 
     #endregion
 

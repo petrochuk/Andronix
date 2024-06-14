@@ -12,22 +12,25 @@ public class FunctionToolInstance
 
     public required string Description { get; init; }
 
+    public required object TypeInstance { get; init; }
+
     public required MethodInfo MethodInfo { get; init; }
 
     public required FunctionToolDefinition Definition { get; init; }
-    public async Task<string> Invoke(object instance, string argumentsJson)
+
+    public async Task<string> Invoke(string argumentsJson)
     {
         Task<string> result;
         if (string.IsNullOrWhiteSpace(argumentsJson))
         {
-            result = (Task<string>)MethodInfo.Invoke(instance, null)!;
+            result = (Task<string>)MethodInfo.Invoke(TypeInstance, null)!;
             return await result.ConfigureAwait(false);
         }
 
         var arguments = JsonSerializer.Deserialize<Dictionary<string, string>>(argumentsJson, SourceGenerationContext.Default.DictionaryStringString);
         if (arguments == null)
         {
-            result = (Task<string>)MethodInfo.Invoke(instance, null)!;
+            result = (Task<string>)MethodInfo.Invoke(TypeInstance, null)!;
             return await result.ConfigureAwait(false);
         }
 
@@ -44,7 +47,7 @@ public class FunctionToolInstance
                 functionParameters.Add(null);
         }
 
-        result = (Task<string>)MethodInfo.Invoke(instance, functionParameters.ToArray())!;
+        result = (Task<string>)MethodInfo.Invoke(TypeInstance, functionParameters.ToArray())!;
         return await result.ConfigureAwait(false);
     }
 }
