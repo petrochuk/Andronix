@@ -6,5 +6,9 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Andronix.Core</RootNamespace>
   </PropertyGroup>
+    
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Graph.Beta" Version="$(MicrosoftGraphBetaVersion)" />
+  </ItemGroup>
 
 </Project>

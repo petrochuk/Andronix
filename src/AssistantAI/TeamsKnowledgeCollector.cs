@@ -36,17 +36,17 @@ public partial class TeamsKnowledgeCollector
 
     public void DoWork()
     {
-
+        /*
         while (!_shutdownEvent.WaitOne(0))
         {
             ReadAllTeamsChannels();
         }
-        
 
         while (!_shutdownEvent.WaitOne(0))
         {
             ReadAllChats();
         }
+        */
     }
 
     private void ReadAllTeamsChannels()
@@ -102,6 +102,7 @@ public partial class TeamsKnowledgeCollector
         var chats = _graphClient.Me.Chats.GetAsync((c) => 
         {
             c.QueryParameters.Orderby = ["lastMessagePreview/createdDateTime desc"];
+            c.QueryParameters.Filter = "topic eq 'Building 7-ake'";
         }).Result;
         if (chats == null || chats.Value == null)
             return;

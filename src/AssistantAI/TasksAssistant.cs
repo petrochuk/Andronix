@@ -1,10 +1,9 @@
-﻿using Andronix.Interfaces;
-using Markdig.Extensions.TaskLists;
+﻿using Andronix.Core.Graph;
+using Andronix.Interfaces;
 using Microsoft.Graph.Beta;
 using Microsoft.Graph.Beta.Models;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.Text;
 
 namespace Andronix.AssistantAI;
@@ -15,6 +14,7 @@ public class TasksAssistant : ISpecializedAssistant
     
     public const string TaskListNameDescription = "Task list name such as 'Flagged Emails', 'Tasks' or other task lists the person created";
     public const string DefaultTaskListName = "Tasks";
+    public const string LinkedOutlook = "Outlook";
 
     #endregion
 
@@ -22,8 +22,8 @@ public class TasksAssistant : ISpecializedAssistant
 
     GraphServiceClient _graphClient;
     TodoTaskList? _taskList;
-    TodoTaskList? _defaultList;
-    TodoTaskList? _flaggedEmailsList;
+    List<TodoTaskList>? _taskLists;
+    List<TaskInList>? _tasks;
 
     public TasksAssistant(GraphServiceClient graphClient)
     {
@@ -36,18 +36,16 @@ public class TasksAssistant : ISpecializedAssistant
 
     [Description("Creates new Task/ToDo for the person you are assisting")]
     private async Task<string> CreateTask(
-        [Description("Short item title")]
+        [Description("Task title")]
         string title,
-        [Description("Longer item description without due date or time")]
+        [Description("Longer task description (without due date)")]
         string description,
         [Description(TaskListNameDescription)]
         string list,
         [Description("Suggested due day which can be in date format or relative such as tomorrow, next week etc")]
         string dueDate)
     {
-        var taskListResponse = await GetTaskList(list);
-        if (taskListResponse.taskList == null)
-            return taskListResponse.response;
+        var taskList = await GetTaskList(list);
 
         var task = new TodoTask
         {
@@ -63,13 +61,42 @@ public class TasksAssistant : ISpecializedAssistant
                 TimeZone = TimeZoneInfo.Local.Id
             }
         };
-        var result = await _graphClient.Me.Todo.Lists[taskListResponse.taskList.Id].Tasks.PostAsync(task);
+        var result = await _graphClient.Me.Todo.Lists[taskList.Id].Tasks.PostAsync(task);
 
         return "Done";
     }
 
+    [Description("Gets Task/ToDo details such as description, due time, attachments, steps etc")]
+    private async Task<string> GetTaskDetails(
+        [Description("Task title")]
+        string title)
+    {
+        var taskList = await GetTasks();
+        var task = taskList?.FirstOrDefault(x => x.TodoTask.Title == title);
+        if (task == null)
+            return $"Task '{title}' not found.";
+
+        var response = new StringBuilder();
+        response.AppendLine($"Title: {task.TodoTask.Title}");
+        if (task.TodoTask.Body != null && !string.IsNullOrWhiteSpace(task.TodoTask.Body.Content))
+            response.AppendLine($"Description: {task.TodoTask.Body?.Content}");
+        response.AppendLine($"Due date: {task.TodoTask.DueDateTime?.DateTime}");
+        if (task.TodoTask.LinkedResources != null)
+        {
+            foreach (var linkedResource in task.TodoTask.LinkedResources)
+            {
+                if (linkedResource.ApplicationName == LinkedOutlook)
+                {
+                    response.AppendLine($"[Email]({linkedResource.WebUrl})");
+                }
+            }
+        }
+
+        return response.ToString();
+    }
+
     [Description("Gets Tasks/ToDos for the person you are assisting")]
-    private async Task<string> GetToDoItems(
+    private async Task<string> GetTasks(
         [Description("It can be nothing for all, tomorrow, next week etc")]
         string dueDate,
         [Description("Task list name such as 'Flagged Emails', 'Tasks' or other task lists the person created")]
@@ -77,63 +104,28 @@ public class TasksAssistant : ISpecializedAssistant
         [Description("Optional status: Done, New, In Progress")]
         string status)
     {
-        var taskLists = await _graphClient.Me.Todo.Lists.GetAsync();
-        if (taskLists == null || taskLists.Value == null)
-            return "Failed to get task lists.";
-
-        // If list is not provided, default to Tasks and Flagged Emails
-        List<TodoTask> tasks;
-        if (string.IsNullOrWhiteSpace(list))
-        {
-            _defaultList ??= taskLists.Value.FirstOrDefault(x => x.WellknownListName == WellknownListName.DefaultList);
-            if (_defaultList == null)
-                return $"Default task list was not found.";
-            var defaultTasksResponse = await _graphClient.Me.Todo.Lists[_defaultList.Id].Tasks.GetAsync((t) =>
-            {
-                t.QueryParameters.Orderby = ["dueDateTime/dateTime asc"];
-                t.QueryParameters.Filter = $"status ne 'completed'";
-            });
-            if (defaultTasksResponse == null || defaultTasksResponse.Value == null)
-                return "Failed to get default tasks.";
-            tasks = defaultTasksResponse.Value;
-
-            _flaggedEmailsList ??= taskLists.Value.FirstOrDefault(x => x.WellknownListName == WellknownListName.FlaggedEmails);
-            if (_flaggedEmailsList != null)
-            {
-                var flaggedEmailsTasksResponse = await _graphClient.Me.Todo.Lists[_flaggedEmailsList.Id].Tasks.GetAsync((t) =>
-                {
-                    t.QueryParameters.Orderby = ["dueDateTime/dateTime asc"];
-                    t.QueryParameters.Filter = $"status ne 'completed'";
-                });
-                if (flaggedEmailsTasksResponse != null && flaggedEmailsTasksResponse.Value != null)
-                {
-                    tasks.AddRange(flaggedEmailsTasksResponse.Value);
-                }
-            }
-        }
-        else
-        {
-            var taskList = taskLists.Value.FirstOrDefault(x => x.DisplayName == list);
-            if (taskList == null)
-                return $"'{list}' list was not found.";
-
-            var tasksResponse = await _graphClient.Me.Todo.Lists[taskList.Id].Tasks.GetAsync((t) =>
-            {
-                t.QueryParameters.Orderby = ["dueDateTime/dateTime asc"];
-                t.QueryParameters.Filter = $"status ne 'completed'";
-            });
-            if (tasksResponse == null || tasksResponse.Value == null)
-                return "Failed to get tasks.";
-            tasks = tasksResponse.Value;
-        }
-
-        if (tasks.Count == 0)
+        var taskList = await GetTasks(list, refresh: true);
+        if (taskList.Count == 0)
             return "No tasks found.";
 
         var response = new StringBuilder();
-        foreach (var task in tasks.OrderBy(x => x.DueDateTime?.DateTime))
+        foreach (var task in taskList.OrderBy(x => x.TodoTask.DueDateTime?.DateTime))
         {
-            response.AppendLine($"{task.Title}");
+            bool isHandled = false;
+            if (task.TodoTask.LinkedResources != null)
+            {
+                foreach (var linkedResource in task.TodoTask.LinkedResources)
+                {
+                    if (linkedResource.ApplicationName == LinkedOutlook)
+                    {
+                        response.AppendLine($"[{linkedResource.DisplayName}]({linkedResource.WebUrl})");
+                        isHandled = true;
+                    }
+                }
+            }
+
+            if (!isHandled)
+                response.AppendLine($"{task.TodoTask.Title}");
         }
 
         return response.ToString();
@@ -141,40 +133,36 @@ public class TasksAssistant : ISpecializedAssistant
 
     [Description("Update Task/ToDo status")]
     private async Task<string> UpdateTaskStatus(
-        [Description("Task name"), Required]
-        string name,
+        [Description("Task title"), Required]
+        string title,
         [Description("New due date or empty")]
         string dueDate,
         [Description("Done, New, Not Started, In Progress")]
         string status)
     {
-        var taskLists = await _graphClient.Me.Todo.Lists.GetAsync();
-        if (taskLists == null || taskLists.Value == null)
-            return "Failed to get tasks.";
+        var taskList = await GetTasks();
+        var task = taskList.FirstOrDefault(x => x.TodoTask.Title == title);
+        if (task == null)
+            return $"Task '{title}' not found.";
 
-        // List all items from Tasks list
-        var list = "Tasks";
-        if (string.IsNullOrWhiteSpace(list))
-            list = "Tasks";
-        var taskList = taskLists.Value.FirstOrDefault(x => x.DisplayName == list);
-        if (taskList == null)
-            return $"'{list}' list not found.";
-
-        var tasks = await _graphClient.Me.Todo.Lists[taskList.Id].Tasks.GetAsync((t) =>
+        // Delete task if it is linked to Outlook
+        if (task.TodoTask.LinkedResources != null)
         {
-            t.QueryParameters.Filter = $"title eq '{Uri.EscapeDataString(name)}' and status ne 'completed'";
-        });
-        if (tasks == null || tasks.Value == null)
-            return "Failed to get tasks.";
+            foreach(var linkedResource in task.TodoTask.LinkedResources)
+            {
+                if (linkedResource.ApplicationName == LinkedOutlook)
+                {
+                    await _graphClient.Me.Todo.Lists[task.ListId].Tasks[task.TodoTask.Id].DeleteAsync();
+                    return $"Done";
+                }
+            }
+        }
 
-        if (tasks.Value.Count == 0)
-            return $"Task '{name}' was not found.";
-
-        tasks.Value[0].Status = Microsoft.Graph.Beta.Models.TaskStatus.Completed;
-        if (tasks.Value[0].Recurrence?.Range?.Type == RecurrenceRangeType.NoEnd)
-            tasks.Value[0].Recurrence.Range = null;
+        task.TodoTask.Status = Microsoft.Graph.Beta.Models.TaskStatus.Completed;
+        if (task.TodoTask.Recurrence?.Range?.Type == RecurrenceRangeType.NoEnd)
+            task.TodoTask.Recurrence.Range = null;
         
-        var result = await _graphClient.Me.Todo.Lists[taskList.Id].Tasks[tasks.Value[0].Id].PatchAsync(tasks.Value[0]);
+        var result = await _graphClient.Me.Todo.Lists[task.ListId].Tasks[task.TodoTask.Id].PatchAsync(task.TodoTask);
 
         return "Done";
     }
@@ -183,29 +171,102 @@ public class TasksAssistant : ISpecializedAssistant
 
     #region Private methods
 
-    private async Task<(string response, TodoTaskList? taskList)> GetTaskList(string listName = DefaultTaskListName)
+    private async Task<TodoTaskList> GetTaskList(string? listName = null, WellknownListName wellknownListName = WellknownListName.DefaultList, bool refresh = false)
     {
-        if (string.IsNullOrWhiteSpace(listName))
-            listName = DefaultTaskListName;
-
-        if (_taskList != null)
+        if (_taskLists == null || refresh)
         {
-            return new () 
-            { 
-                response = string.Empty, 
-                taskList = _taskList 
-            };
+            var taskListsResponse = await _graphClient.Me.Todo.Lists.GetAsync();
+            if (taskListsResponse == null || taskListsResponse.Value == null)
+                throw new FunctionCallException("Failed to get task lists.");
+            _taskLists = taskListsResponse.Value;
         }
 
-        var taskLists = await _graphClient.Me.Todo.Lists.GetAsync();
-        if (taskLists == null || taskLists.Value == null)
-            return new() { response = "Failed to get tasks.", taskList = null };
+        if (string.IsNullOrWhiteSpace(listName) && wellknownListName == WellknownListName.DefaultList)
+        {
+            if (_taskList != null && !refresh)
+                return _taskList;
 
-        var taskList = taskLists.Value.FirstOrDefault(x => x.DisplayName == listName);
+            _taskList = _taskLists.FirstOrDefault(x => x.WellknownListName == WellknownListName.DefaultList);
+            if (_taskList == null)
+                throw new FunctionCallException("Default task list not found.");
+
+            return _taskList;
+        }
+
+        var taskList = _taskLists.FirstOrDefault(x => x.DisplayName == listName);
         if (taskList == null)
-            return new() { response = $"'{listName}' list not found.", taskList = null };
+            throw new FunctionCallException($"'{listName}' task list not found.");
 
-        return new() { response = string.Empty, taskList = taskList };
+        return _taskList = taskList;
+    }
+
+    private async Task<List<TaskInList>> GetTasks(string? listName = null, WellknownListName wellknownListName = WellknownListName.DefaultList, bool refresh = false)
+    {
+        if (_taskLists == null || refresh)
+        {
+            var taskListsResponse = await _graphClient.Me.Todo.Lists.GetAsync();
+            if (taskListsResponse == null || taskListsResponse.Value == null)
+                throw new FunctionCallException("Failed to get task lists.");
+            _taskLists = taskListsResponse.Value;
+        }
+
+        if (string.IsNullOrWhiteSpace(listName) && wellknownListName == WellknownListName.DefaultList)
+        {
+            if (_tasks != null && !refresh)
+                return _tasks;
+
+            _tasks = new();
+            var defaultList = _taskLists.FirstOrDefault(x => x.WellknownListName == WellknownListName.DefaultList);
+            if (defaultList == null)
+                throw new FunctionCallException("Default task list not found.");
+
+            // Load tasks for default list
+            var defaultTasksResponse = await _graphClient.Me.Todo.Lists[defaultList.Id].Tasks.GetAsync((t) =>
+            {
+                t.QueryParameters.Orderby = ["dueDateTime/dateTime asc"];
+                t.QueryParameters.Filter = $"status ne 'completed'";
+            });
+            if (defaultTasksResponse == null || defaultTasksResponse.Value == null)
+                throw new FunctionCallException("Failed to get default tasks.");
+            // Add tasks to the list
+            _tasks.AddRange(defaultTasksResponse.Value.Select(t => new TaskInList(t, defaultList.Id)));
+
+            // Load tasks for flagged emails
+            var flaggedEmailsList = _taskLists.FirstOrDefault(x => x.WellknownListName == WellknownListName.FlaggedEmails);
+            if (flaggedEmailsList != null)
+            {
+                var flaggedEmailsTasksResponse = await _graphClient.Me.Todo.Lists[flaggedEmailsList.Id].Tasks.GetAsync((t) =>
+                {
+                    t.QueryParameters.Orderby = ["dueDateTime/dateTime asc"];
+                    t.QueryParameters.Filter = $"status ne 'completed'";
+                });
+                if (flaggedEmailsTasksResponse != null && flaggedEmailsTasksResponse.Value != null)
+                {
+                    // Add tasks to the list
+                    _tasks.AddRange(flaggedEmailsTasksResponse.Value.Select(t => new TaskInList(t, defaultList.Id)));
+                }
+            }
+
+            return _tasks;
+        }
+
+        var taskList = _taskLists.FirstOrDefault(x => x.DisplayName == listName);
+        if (taskList == null)
+            throw new FunctionCallException($"'{listName}' task list not found.");
+        
+        // Load tasks
+        var tasksResponse = await _graphClient.Me.Todo.Lists[taskList.Id].Tasks.GetAsync((t) =>
+        {
+            t.QueryParameters.Orderby = ["dueDateTime/dateTime asc"];
+            t.QueryParameters.Filter = $"status ne 'completed'";
+        });
+        if (tasksResponse == null || tasksResponse.Value == null)
+            throw new FunctionCallException($"Failed to get '{listName}' tasks.");
+
+        _tasks = new();
+        _tasks.AddRange(tasksResponse.Value.Select(t => new TaskInList(t, taskList.Id)));
+
+        return _tasks;
     }
 
     #endregion
