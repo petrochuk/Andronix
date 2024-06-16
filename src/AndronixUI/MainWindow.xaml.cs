@@ -20,6 +20,12 @@ public sealed partial class MainWindow : Window, IDialogPresenter
         InitializeComponent();
 
         AppWindow.SetIcon("assistant.ico");
+        _promptText.SuggestionsSource = 
+        [
+            "detail",
+            "feature",
+            "task"
+        ];
     }
 
     private async void Window_Activated(object sender, WindowActivatedEventArgs args)

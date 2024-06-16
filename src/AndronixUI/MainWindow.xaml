@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Activated="Window_Activated"
     mc:Ignorable="d">
-
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -29,7 +29,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBox x:Name="_promptText" AcceptsReturn="True" 
+            <local:AutoCompleteTextBox x:Name="_promptText" AcceptsReturn="True" 
                      Grid.Column="0" Grid.Row="0" 
                      PreviewKeyDown="PromptText_PreviewKeyDown" />
             <Button x:Name="_goButton" Grid.Column="1" Grid.Row="0" Click="GoButton_Click">Go ▷</Button>
