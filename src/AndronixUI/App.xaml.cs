@@ -15,14 +15,17 @@ public partial class App : Application, IApplication
 {
     private Window _window;
     private TeamsKnowledgeCollector _intelligenceGatherer;
+    private TeamsAssistant _teamsAssistant;
 
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
     /// executed, and as such is the logical equivalent of main() or WinMain().
     /// </summary>
-    public App()
+    public App(TeamsAssistant teamsAssistant)
     {
         InitializeComponent();
+
+        _teamsAssistant = teamsAssistant ?? throw new ArgumentNullException(nameof(teamsAssistant));
     }
 
     #region IAppHost
@@ -46,6 +49,7 @@ public partial class App : Application, IApplication
         _intelligenceGatherer = Program.Host.Services.GetRequiredService<TeamsKnowledgeCollector>();
 #if DEBUG
         _intelligenceGatherer.Start();
+        _teamsAssistant.Start();
 #endif
 
         // Maximize
@@ -60,6 +64,7 @@ public partial class App : Application, IApplication
     public void OnStopApplication()
     {
         _intelligenceGatherer.Stop();
+        _teamsAssistant.Stop();
     }
 
     private static IConfiguration LoadConfiguration()

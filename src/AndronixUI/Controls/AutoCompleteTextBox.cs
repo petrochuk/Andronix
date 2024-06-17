@@ -267,7 +267,6 @@ public sealed class AutoCompleteTextBox : TextBox
 
             if (result is not null && result.Equals(Text) is not true)
             {
-                Debug.WriteLine($"Inc: '{incompleteWord}' Suggestion: {result}");
                 return result;
             }
         }

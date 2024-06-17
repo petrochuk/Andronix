@@ -24,9 +24,11 @@ internal class Program
                 services.AddHostedService<WinUIHostedService>();
                 services.AddHostedService<QueuedAssistantService>();
 
+                // Add options
                 services.AddOptions<CognitiveOptions>().Bind(configuration.GetSection(nameof(CognitiveOptions)));
                 services.AddOptions<GraphOptions>().Bind(configuration.GetSection(nameof(GraphOptions)));
                 services.AddOptions<AssistantOptions>().Bind(configuration.GetSection(nameof(AssistantOptions)));
+                services.AddOptions<TeamsAssistantOptions>().Bind(configuration.GetSection("TeamsAssistant"));
 
                 services.AddSingleton<MainWindow>();
                 services.AddSingleton<IDialogPresenter>(provider => provider.GetService<MainWindow>());

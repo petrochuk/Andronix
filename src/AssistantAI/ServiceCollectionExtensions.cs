@@ -15,6 +15,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<Assistant>();
         services.AddTransient(s => new GraphServiceClient(s.GetRequiredService<IAuthenticationProvider>()));
         services.AddTransient<TasksAssistant>();
+        services.AddTransient<TeamsAssistant>();
         services.AddSingleton<IBackgroundTaskQueue, AssistantTaskQueue>();
 
         return services;

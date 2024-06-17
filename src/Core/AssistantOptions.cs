@@ -1,5 +1,8 @@
 ﻿namespace Andronix.Core;
 
+/// <summary>
+/// Options for the personal Assistant
+/// </summary>
 public class AssistantOptions
 {
     public required string Name { get; set; }

@@ -23,8 +23,20 @@ public sealed partial class MainWindow : Window, IDialogPresenter
         _promptText.SuggestionsSource = 
         [
             "detail",
+            "eighth",
+            "eleventh",
             "feature",
-            "task"
+            "fifth",
+            "first",
+            "fourth",
+            "ninth",
+            "second",
+            "seventh",
+            "sixth",
+            "task",
+            "tenth",
+            "third",
+            "twelfth",
         ];
     }
 
