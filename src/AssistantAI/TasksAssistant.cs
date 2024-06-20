@@ -63,7 +63,7 @@ public class TasksAssistant : ISpecializedAssistant
         };
         var result = await _graphClient.Me.Todo.Lists[taskList.Id].Tasks.PostAsync(task);
 
-        return "Done";
+        return "Task created";
     }
 
     [Description("Gets Task/ToDo details such as description, due time, attachments, steps etc")]
@@ -164,7 +164,7 @@ public class TasksAssistant : ISpecializedAssistant
         
         var result = await _graphClient.Me.Todo.Lists[task.ListId].Tasks[task.TodoTask.Id].PatchAsync(task.TodoTask);
 
-        return "Done";
+        return "Task updated";
     }
 
     #endregion

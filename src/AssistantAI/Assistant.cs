@@ -37,6 +37,7 @@ public class Assistant
     private OpenAI.Files.FileClient _fileClient;
     private readonly Dictionary<string, FunctionToolInstance> _functionsMap = new(StringComparer.OrdinalIgnoreCase);
     private TasksAssistant _tasksAssistant;
+    private GitAssistant _gitAssistant;
 
     public Assistant(
         IDialogPresenter dialogPresenter,
@@ -44,6 +45,7 @@ public class Assistant
         IOptions<AssistantOptions> assistantOptions,
         AndronixTokenCredential andronixTokenCredential,
         TasksAssistant tasksAssistant,
+        GitAssistant gitAssistant,
         IAuthenticationProvider authenticationProvider) 
     {
         _dialogPresenter = dialogPresenter ?? throw new ArgumentNullException(nameof(dialogPresenter));
@@ -79,6 +81,7 @@ public class Assistant
         });
 
         _tasksAssistant = tasksAssistant;
+        _gitAssistant = gitAssistant;
 
         InitializeFunctions();
     }
@@ -87,6 +90,7 @@ public class Assistant
     {
         InitializeFunctions(this);
         InitializeFunctions(_tasksAssistant);
+        InitializeFunctions(_gitAssistant);
     }
 
     private void InitializeFunctions(object typeInstance)

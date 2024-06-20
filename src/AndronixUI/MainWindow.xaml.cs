@@ -28,6 +28,7 @@ public sealed partial class MainWindow : Window, IDialogPresenter
             "feature",
             "fifth",
             "first",
+            "folder",
             "fourth",
             "ninth",
             "second",

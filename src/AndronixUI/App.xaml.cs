@@ -48,8 +48,8 @@ public partial class App : Application, IApplication
         _window = Program.Host.Services.GetRequiredService<MainWindow>();
         _intelligenceGatherer = Program.Host.Services.GetRequiredService<TeamsKnowledgeCollector>();
 #if DEBUG
-        _intelligenceGatherer.Start();
-        _teamsAssistant.Start();
+        //_intelligenceGatherer.Start();
+        //_teamsAssistant.Start();
 #endif
 
         // Maximize
