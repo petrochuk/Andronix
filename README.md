@@ -2,6 +2,8 @@
 
 Simple AI Assistant with aim to help you with your daily tasks. It is a Windows desktop application which means it can help with any task that can be done on your desktop or laptop including working with files and other applications. It can also communicate with online services such as Microsoft Teams, Email, Azure DevOps etc.
 
+![image](diagram.jpg)
+
 ## Discussion
 
 Join our Discord server to discuss the project and get help with any issues you may have.
@@ -13,6 +15,7 @@ Invite link to: [Building AI Assistant](https://discord.gg/fknAQ2uJY4)
 - [x] List your tasks and flagged emails
 - [x] Create a new task
 - [x] Mark a task as complete
+- [x] Open local folders
 
 ## Installation
 
