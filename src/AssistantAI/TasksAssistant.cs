@@ -141,7 +141,7 @@ public class TasksAssistant : ISpecializedAssistant
         string status)
     {
         var taskList = await GetTasks();
-        var task = taskList.FirstOrDefault(x => x.TodoTask.Title == title);
+        var task = taskList.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.TodoTask.Title) && x.TodoTask.Title.Equals(title, StringComparison.OrdinalIgnoreCase));
         if (task == null)
             return $"Task '{title}' not found.";
 
