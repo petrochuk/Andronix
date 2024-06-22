@@ -3,7 +3,7 @@
 Simple AI Assistant with aim to help you with your daily tasks. It is a Windows desktop application which means it can help with any task that can be done on your desktop or laptop including working with files and other applications. It can also communicate with online services such as Microsoft Teams, Email, Azure DevOps etc.
 
 <p align="center">
-  <img src="diagram.jpg" />
+  <img src="assets/images/diagram.jpg" />
 </p>
 
 ## Discussion
