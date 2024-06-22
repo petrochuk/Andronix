@@ -256,7 +256,7 @@ public class Assistant
             throw new InvalidOperationException("Thread not created.");
 
         _dialogPresenter.UpdateStatus("Sending prompt...");
-        await _assistantClient.CreateMessageAsync(_openAiAssistantThread, [MessageContent.FromText(prompt)]);
+        await _assistantClient.CreateMessageAsync(_openAiAssistantThread, MessageRole.User, [MessageContent.FromText(prompt)]);
         var runResponse = await _assistantClient.CreateRunAsync(_openAiAssistantThread, _openAiAssistant);
         
         var stopWatch = new Stopwatch();

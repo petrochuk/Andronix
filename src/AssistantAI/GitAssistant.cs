@@ -1,10 +1,5 @@
-﻿using Andronix.Core.Graph;
-using Andronix.Interfaces;
-using Microsoft.Graph.Beta;
-using Microsoft.Graph.Beta.Models;
+﻿using Andronix.Interfaces;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace Andronix.AssistantAI;
 
