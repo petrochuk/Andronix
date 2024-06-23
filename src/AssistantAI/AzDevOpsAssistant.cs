@@ -5,6 +5,7 @@ using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.TeamFoundation.Core.WebApi.Types;
 using Microsoft.TeamFoundation.Work.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
+using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.OAuth;
 using Microsoft.VisualStudio.Services.WebApi;
 using Microsoft.VisualStudio.Services.WebApi.Patch;
@@ -82,7 +83,39 @@ public class AzDevOpsAssistant : ISpecializedAssistant
 
         var result = client.CreateWorkItemAsync(patchDocument, _options.Project, UserStory).Result;
 
-        return $"New user story {result.Id} has been created";
+        return $"New user story id {result.Id} has been created";
+    }
+
+    [Description("Open an Azure DevOps item such as Bug, User Story, Feature, Task in a browser to see details and edit.")]
+    private async Task<string> OpenItem(
+        [Description("Id of Bug, User Story, Feature, Task")]
+        string id)
+    {
+        if (!int.TryParse(id, out int itemId))
+            return "Invalid item id. It should be positive number";
+
+        var connection = await GetVssConnection().ConfigureAwait(false);
+        var client = connection.GetClient<WorkItemTrackingHttpClient>();
+
+        try
+        {
+            var item = await client.GetWorkItemAsync(_options.Project, itemId).ConfigureAwait(false);
+            if (!item.Links.Links.TryGetValue("html", out var valueObj))
+                return "Link to item is not available";
+
+            if (!(valueObj is ReferenceLink referenceLink))
+                return "Link to item is not available";
+            var startInfo = new ProcessStartInfo(referenceLink.Href);
+            startInfo.UseShellExecute = true;
+            startInfo.CreateNoWindow = true;
+            var p = System.Diagnostics.Process.Start(startInfo);
+        }
+        catch (VssServiceException ex)
+        {
+            return ex.Message;
+        }
+
+        return $"Item has been open";
     }
 
     #endregion
