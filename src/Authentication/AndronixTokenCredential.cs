@@ -13,9 +13,9 @@ public class AndronixTokenCredential : TokenCredential
 {
     private static IPublicClientApplication? PublicClientApplicationForCognitiveServices;
     public static string[] CognitiveServicesScope = ["https://cognitiveservices.azure.com/.default"];
-    IOptions<CognitiveOptions> _cognitiveOptions;
+    IOptions<Core.Options.Cognitive> _cognitiveOptions;
 
-    public AndronixTokenCredential(IOptions<CognitiveOptions> cognitiveOptions, IApplication appHost)
+    public AndronixTokenCredential(IOptions<Core.Options.Cognitive> cognitiveOptions, IApplication appHost)
     {
         _cognitiveOptions = cognitiveOptions;
         if (PublicClientApplicationForCognitiveServices == null)

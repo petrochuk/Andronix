@@ -1,6 +1,6 @@
-﻿namespace Andronix.Core;
+﻿namespace Andronix.Core.Options;
 
-public class GraphOptions
+public class Graph
 {
     public required string ClientId { get; init; }
 }

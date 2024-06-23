@@ -1,6 +1,6 @@
-﻿namespace Andronix.Core;
+﻿namespace Andronix.Core.Options;
 
-public record CognitiveOptions
+public record Cognitive
 {
     public required Uri EndPoint { get; init; }
     public required string TenantIdForCognitiveServices { get; init; }

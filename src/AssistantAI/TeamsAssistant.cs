@@ -13,9 +13,9 @@ public class TeamsAssistant : IBackgroundWorker
     Thread _thread;
     Team? _team;
     Channel? _channel;
-    TeamsAssistantOptions _options;
+    Core.Options.TeamsAssistant _options;
 
-    public TeamsAssistant(GraphServiceClient graphClient, IOptions<TeamsAssistantOptions> options)
+    public TeamsAssistant(GraphServiceClient graphClient, IOptions<Core.Options.TeamsAssistant> options)
     {
         _graphClient = graphClient ?? throw new ArgumentNullException(nameof(graphClient));
         _options = (options ?? throw new ArgumentNullException(nameof(options))).Value;

@@ -1,7 +1,6 @@
 ﻿using Andronix.AssistantAI;
 using Andronix.Authentication;
 using Andronix.Core;
-using Andronix.Core.Options;
 using Andronix.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -26,11 +25,11 @@ internal class Program
                 services.AddHostedService<QueuedAssistantService>();
 
                 // Add options
-                services.AddOptions<CognitiveOptions>().Bind(configuration.GetSection(nameof(CognitiveOptions)));
-                services.AddOptions<GraphOptions>().Bind(configuration.GetSection(nameof(GraphOptions)));
-                services.AddOptions<AssistantOptions>().Bind(configuration.GetSection(nameof(AssistantOptions)));
-                services.AddOptions<TeamsAssistantOptions>().Bind(configuration.GetSection("TeamsAssistant"));
-                services.AddOptions<AzDevOps>().Bind(configuration.GetSection(nameof(AzDevOps)));
+                services.AddOptions<Core.Options.Cognitive>().Bind(configuration.GetSection(nameof(Core.Options.Cognitive)));
+                services.AddOptions<Core.Options.Graph>().Bind(configuration.GetSection(nameof(Core.Options.Graph)));
+                services.AddOptions<Core.Options.Assistant>().Bind(configuration.GetSection(nameof(Core.Options.Assistant)));
+                services.AddOptions<TeamsAssistant>().Bind(configuration.GetSection("TeamsAssistant"));
+                services.AddOptions<Core.Options.AzDevOps>().Bind(configuration.GetSection(nameof(Core.Options.AzDevOps)));
 
                 services.AddSingleton<MainWindow>();
                 services.AddSingleton<IDialogPresenter>(provider => provider.GetService<MainWindow>());

@@ -29,8 +29,8 @@ public class Assistant
     private Lazy<GraphServiceClient> _graphClient;
     private AzureOpenAIClient _azureOpenAIClient;
     private AssistantClient _assistantClient;
-    private CognitiveOptions _cognitiveOptions;
-    private AssistantOptions _assistantOptions;
+    private Core.Options.Cognitive _cognitiveOptions;
+    private Core.Options.Assistant _assistantOptions;
     private Lazy<Core.UserSettings> _userSettings;
     private OpenAI.Assistants.Assistant? _openAiAssistant;
     private OpenAI.Assistants.AssistantThread? _openAiAssistantThread;
@@ -42,8 +42,8 @@ public class Assistant
 
     public Assistant(
         IDialogPresenter dialogPresenter,
-        IOptions<CognitiveOptions> cognitiveOptions, 
-        IOptions<AssistantOptions> assistantOptions,
+        IOptions<Core.Options.Cognitive> cognitiveOptions, 
+        IOptions<Core.Options.Assistant> assistantOptions,
         AndronixTokenCredential andronixTokenCredential,
         TasksAssistant tasksAssistant,
         GitAssistant gitAssistant,

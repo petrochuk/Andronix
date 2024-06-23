@@ -1,6 +1,6 @@
-﻿namespace Andronix.Core;
+﻿namespace Andronix.Core.Options;
 
-public class TeamsAssistantOptions
+public class TeamsAssistant
 {
     public required string TeamName { get; init; }
 

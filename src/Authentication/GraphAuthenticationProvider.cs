@@ -1,5 +1,4 @@
-﻿using Andronix.Core;
-using Microsoft.Identity.Client;
+﻿using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Broker;
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Authentication;
@@ -10,9 +9,9 @@ namespace Andronix.Authentication;
 internal class GraphAuthenticationProvider : IAuthenticationProvider
 {
 	IPublicClientApplication? _publicClientApplication;
-    private readonly IOptions<GraphOptions> _graphOptions;
+    private readonly IOptions<Core.Options.Graph> _graphOptions;
 
-    public GraphAuthenticationProvider(IOptions<GraphOptions> graphOptions)
+    public GraphAuthenticationProvider(IOptions<Core.Options.Graph> graphOptions)
 	{
         _graphOptions = graphOptions ?? throw new ArgumentNullException(nameof(graphOptions));
 	}
