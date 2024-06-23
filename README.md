@@ -19,7 +19,8 @@ Invite link to: [Building AI Assistant](https://discord.gg/fknAQ2uJY4)
 - [x] Mark a task as complete
 - [x] Open local folders
 - [x] Create a new user story in Azure DevOps
-- [x] Open Azure DevOps item in a browser
+- [x] Open Azure DevOps item such as Bug, Task, User Story, Feature in a browser
+- [x] Open Azure DevOps pull request in a browser
 
 ## Installation
 

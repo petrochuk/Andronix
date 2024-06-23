@@ -3,6 +3,7 @@ using Andronix.Core.Options;
 using Andronix.Interfaces;
 using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.TeamFoundation.Core.WebApi.Types;
+using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.TeamFoundation.Work.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
 using Microsoft.VisualStudio.Services.Common;
@@ -95,10 +96,10 @@ public class AzDevOpsAssistant : ISpecializedAssistant
             return "Invalid item id. It should be positive number";
 
         var connection = await GetVssConnection().ConfigureAwait(false);
-        var client = connection.GetClient<WorkItemTrackingHttpClient>();
 
         try
         {
+            var client = connection.GetClient<WorkItemTrackingHttpClient>();
             var item = await client.GetWorkItemAsync(_options.Project, itemId).ConfigureAwait(false);
             if (!item.Links.Links.TryGetValue("html", out var valueObj))
                 return "Link to item is not available";
@@ -116,6 +117,45 @@ public class AzDevOpsAssistant : ISpecializedAssistant
         }
 
         return $"Item has been open";
+    }
+
+    [Description("Open Azure DevOps pull request in a browser to see details, comments and merge.")]
+    private async Task<string> OpenPullRequest(
+        [Description("Id of pull request")]
+        string id)
+    {
+        if (!int.TryParse(id, out int prId))
+            return "Invalid pull request id. It should be positive number";
+
+        var connection = await GetVssConnection().ConfigureAwait(false);
+
+        try
+        {
+            var client = connection.GetClient<GitHttpClient>();
+            var pr = await client.GetPullRequestByIdAsync(prId).ConfigureAwait(false);
+            var pullRequestHref = string.Empty;
+            if (pr.Links == null || !pr.Links.Links.TryGetValue("html", out var valueObj))
+            {
+                pullRequestHref = $"{pr.Repository.WebUrl}/pullrequest/{prId}";
+            }
+            else
+            {
+                if (!(valueObj is ReferenceLink referenceLink))
+                    return "Link to pull request is not available";
+                pullRequestHref = referenceLink.Href;
+            }
+
+            var startInfo = new ProcessStartInfo(pullRequestHref);
+            startInfo.UseShellExecute = true;
+            startInfo.CreateNoWindow = true;
+            var p = System.Diagnostics.Process.Start(startInfo);
+        }
+        catch (VssServiceException ex)
+        {
+            return ex.Message;
+        }
+
+        return $"Pull request has been open";
     }
 
     #endregion
