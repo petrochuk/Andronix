@@ -38,6 +38,7 @@ public class Assistant
     private readonly Dictionary<string, FunctionToolInstance> _functionsMap = new(StringComparer.OrdinalIgnoreCase);
     private TasksAssistant _tasksAssistant;
     private GitAssistant _gitAssistant;
+    private AzDevOpsAssistant _azDevOpsAssistant;
 
     public Assistant(
         IDialogPresenter dialogPresenter,
@@ -46,6 +47,7 @@ public class Assistant
         AndronixTokenCredential andronixTokenCredential,
         TasksAssistant tasksAssistant,
         GitAssistant gitAssistant,
+        AzDevOpsAssistant azDevOpsAssistant,
         IAuthenticationProvider authenticationProvider) 
     {
         _dialogPresenter = dialogPresenter ?? throw new ArgumentNullException(nameof(dialogPresenter));
@@ -82,6 +84,7 @@ public class Assistant
 
         _tasksAssistant = tasksAssistant;
         _gitAssistant = gitAssistant;
+        _azDevOpsAssistant = azDevOpsAssistant;
 
         InitializeFunctions();
     }
@@ -91,6 +94,7 @@ public class Assistant
         InitializeFunctions(this);
         InitializeFunctions(_tasksAssistant);
         InitializeFunctions(_gitAssistant);
+        InitializeFunctions(_azDevOpsAssistant);
     }
 
     private void InitializeFunctions(object typeInstance)

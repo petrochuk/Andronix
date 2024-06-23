@@ -11,6 +11,7 @@ public static class ServiceCollectionExtensions
 
         services.AddTransient<AndronixTokenCredential>();
         services.AddTransient<IAuthenticationProvider, GraphAuthenticationProvider>();
+        services.AddTransient<AzDevOpsAuthProvider>();
 
         return services;
     }

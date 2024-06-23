@@ -1,6 +1,7 @@
 ﻿using Andronix.AssistantAI;
 using Andronix.Authentication;
 using Andronix.Core;
+using Andronix.Core.Options;
 using Andronix.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -29,6 +30,7 @@ internal class Program
                 services.AddOptions<GraphOptions>().Bind(configuration.GetSection(nameof(GraphOptions)));
                 services.AddOptions<AssistantOptions>().Bind(configuration.GetSection(nameof(AssistantOptions)));
                 services.AddOptions<TeamsAssistantOptions>().Bind(configuration.GetSection("TeamsAssistant"));
+                services.AddOptions<AzDevOps>().Bind(configuration.GetSection(nameof(AzDevOps)));
 
                 services.AddSingleton<MainWindow>();
                 services.AddSingleton<IDialogPresenter>(provider => provider.GetService<MainWindow>());

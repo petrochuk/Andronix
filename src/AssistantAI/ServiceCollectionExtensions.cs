@@ -17,6 +17,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<TasksAssistant>();
         services.AddTransient<GitAssistant>();
         services.AddTransient<TeamsAssistant>();
+        services.AddTransient<AzDevOpsAssistant>();
         services.AddSingleton<IBackgroundTaskQueue, AssistantTaskQueue>();
 
         return services;
