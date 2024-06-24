@@ -60,7 +60,7 @@
             <Image Grid.Column="0" Grid.Row="0" Width="200" Height="200" VerticalAlignment="Top" HorizontalAlignment="Center"
                 Source="Assets/Robot-Animated.gif" />
             <Border Grid.Column="0" Grid.Row="1" Padding="4" Grid.ColumnSpan="2"
-                Background="{ThemeResource SystemColorWindowTextBrush}">
+                Background="{ThemeResource SystemControlBackgroundListMediumBrush}">
                 <TextBlock x:Name="_statusLog" Text="" FontSize="14"/>
             </Border>
         </Grid>
