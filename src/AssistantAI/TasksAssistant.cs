@@ -1,4 +1,5 @@
-﻿using Andronix.Core.Graph;
+﻿using Andronix.Core.Extensions;
+using Andronix.Core.Graph;
 using Andronix.Interfaces;
 using Microsoft.Graph.Beta;
 using Microsoft.Graph.Beta.Models;
@@ -158,12 +159,20 @@ public class TasksAssistant : ISpecializedAssistant
             }
         }
 
-        task.TodoTask.Status = Microsoft.Graph.Beta.Models.TaskStatus.Completed;
-        if (task.TodoTask.Recurrence?.Range?.Type == RecurrenceRangeType.NoEnd)
-            task.TodoTask.Recurrence.Range = null;
+        if (string.IsNullOrWhiteSpace(status))
+        {
+            var dueDateTimeOffset = dueDate.ToDateTimeOffset(TimeProvider.System);
+            task.TodoTask.DueDateTime = dueDateTimeOffset.ToDateTimeTimeZone();
+        }
+        else
+        {
+            task.TodoTask.Status = Microsoft.Graph.Beta.Models.TaskStatus.Completed;
+            if (task.TodoTask.Recurrence?.Range?.Type == RecurrenceRangeType.NoEnd)
+                task.TodoTask.Recurrence.Range = null;
         
-        var result = await _graphClient.Me.Todo.Lists[task.ListId].Tasks[task.TodoTask.Id].PatchAsync(task.TodoTask);
+        }
 
+        var result = await _graphClient.Me.Todo.Lists[task.ListId].Tasks[task.TodoTask.Id].PatchAsync(task.TodoTask);
         return "Task updated";
     }
 
