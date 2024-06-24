@@ -12,32 +12,58 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <WebView2 x:Name="_responseView" Grid.Column="0" Grid.Row="0" 
-            NavigationStarting="ResponseView_NavigationStarting"
-        />
-        <Grid Grid.Column="0" Grid.Row="1" >
+        <!-- Column 0 -->
+        <Grid Grid.Column="0" Grid.Row="0">
             <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <local:AutoCompleteTextBox x:Name="_promptText" AcceptsReturn="True" 
-                     Grid.Column="0" Grid.Row="0" 
-                     PreviewKeyDown="PromptText_PreviewKeyDown" />
-            <Button x:Name="_goButton" Grid.Column="1" Grid.Row="0" Click="GoButton_Click">Go ▷</Button>
+            <WebView2 x:Name="_responseView" Grid.Column="0" Grid.Row="0"
+                      NavigationStarting="ResponseView_NavigationStarting" />
+            <!-- Row 1 -->
+            <Grid Grid.Column="0" Grid.Row="1" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <local:AutoCompleteTextBox x:Name="_promptText" AcceptsReturn="True" 
+                         Grid.Column="0" Grid.Row="0" 
+                         PreviewKeyDown="PromptText_PreviewKeyDown" />
+                <Button x:Name="_goButton" Grid.Column="1" Grid.Row="0" Click="GoButton_Click">Go ▷</Button>
+            </Grid>            
+            <Border Grid.Column="0" Grid.Row="2" Padding="4" 
+                    Background="{ThemeResource SystemControlBackgroundListMediumBrush}">
+                <TextBlock x:Name="_statusText" Text="Ready" FontSize="14"/>
+            </Border>
         </Grid>
-        <Border Grid.Column="0" Grid.Row="2" Padding="4" 
-                Background="{ThemeResource SystemControlBackgroundListMediumBrush}">
-            <TextBlock x:Name="_statusText" Text="Ready" FontSize="14"/>
-        </Border>
+        <!-- Column 1 -->
+        <Grid Grid.Column="1" Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Image Grid.Column="0" Grid.Row="0" Width="200" Height="200" VerticalAlignment="Top" HorizontalAlignment="Center"
+                Source="Assets/Robot-Animated.gif" />
+            <Border Grid.Column="0" Grid.Row="1" Padding="4" Grid.ColumnSpan="2"
+                Background="{ThemeResource SystemColorWindowTextBrush}">
+                <TextBlock x:Name="_statusLog" Text="" FontSize="14"/>
+            </Border>
+        </Grid>
     </Grid>
     
 </Window>

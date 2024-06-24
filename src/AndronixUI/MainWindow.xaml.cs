@@ -4,6 +4,7 @@ using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
+using Windows.UI;
 
 namespace Andronix.UI;
 
@@ -39,6 +40,9 @@ public sealed partial class MainWindow : Window, IDialogPresenter
             "third",
             "twelfth",
         ];
+
+        // Set the default background color to theme color
+        _responseView.DefaultBackgroundColor = Microsoft.UI.Colors.Transparent;
     }
 
     private async void Window_Activated(object sender, WindowActivatedEventArgs args)

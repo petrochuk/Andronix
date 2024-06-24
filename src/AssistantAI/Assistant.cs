@@ -293,7 +293,7 @@ public class Assistant
         var afterRunMessagesResponse = _assistantClient.GetMessages(_openAiAssistantThread.Id, OpenAI.ListOrder.OldestFirst);
 
         var dialogHtml = new StringBuilder();
-        dialogHtml.Append("<html><body style='font-family: Consolas; font-size: 14px;'>");
+        dialogHtml.Append("<html><style>a:link, a:visited, a:hover, a:active {color: DeepSkyBlue; background-color: transparent;}</style><body style='font-family: Consolas; font-size: 14px;'>");
 
         _dialogPresenter.UpdateStatus("Displaying response...");
         foreach (var threadMessage in afterRunMessagesResponse)
@@ -304,11 +304,11 @@ public class Assistant
                 if (!string.IsNullOrWhiteSpace(contentItem.Text))
                 {
                     if (threadMessage.Role == MessageRole.User)
-                        dialogHtml.Append($"<div style='color: blue;'>{Markdown.ToHtml(contentItem.Text)}</div>");
+                        dialogHtml.Append($"<div style='color: white;'>{Markdown.ToHtml(contentItem.Text)}</div>");
                     else if (threadMessage.Role == MessageRole.Assistant)
-                        dialogHtml.Append($"<div style='color: green;'>Assistant: {Markdown.ToHtml(contentItem.Text)}</div>");
+                        dialogHtml.Append($"<div style='color: MediumSeaGreen;'>Assistant: {Markdown.ToHtml(contentItem.Text)}</div>");
                     else
-                        dialogHtml.Append($"<div style='color: black;'>{Markdown.ToHtml(contentItem.Text)}</div>");
+                        dialogHtml.Append($"<div style='color: white;'>{Markdown.ToHtml(contentItem.Text)}</div>");
                 }
             }
         }
