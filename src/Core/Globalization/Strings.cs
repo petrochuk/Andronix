@@ -2,13 +2,14 @@
 
 public static class Strings
 {
-    public static Dictionary<string, string> Last = new(StringComparer.OrdinalIgnoreCase);
-    public static Dictionary<string, string> Older = new(StringComparer.OrdinalIgnoreCase);
-    public static Dictionary<string, string> Newer = new(StringComparer.OrdinalIgnoreCase);
-    public static Dictionary<string, string> Day = new(StringComparer.OrdinalIgnoreCase);
-    public static Dictionary<string, string> Week = new(StringComparer.OrdinalIgnoreCase);
-    public static Dictionary<string, string> Month = new(StringComparer.OrdinalIgnoreCase);
-    public static Dictionary<string, string> Year = new(StringComparer.OrdinalIgnoreCase);
+    public static readonly Dictionary<string, string> Last = new(StringComparer.OrdinalIgnoreCase);
+    public static readonly Dictionary<string, string> Next = new(StringComparer.OrdinalIgnoreCase);
+    public static readonly Dictionary<string, string> Older = new(StringComparer.OrdinalIgnoreCase);
+    public static readonly Dictionary<string, string> Newer = new(StringComparer.OrdinalIgnoreCase);
+    public static readonly Dictionary<string, string> Day = new(StringComparer.OrdinalIgnoreCase);
+    public static readonly Dictionary<string, string> Week = new(StringComparer.OrdinalIgnoreCase);
+    public static readonly Dictionary<string, string> Month = new(StringComparer.OrdinalIgnoreCase);
+    public static readonly Dictionary<string, string> Year = new(StringComparer.OrdinalIgnoreCase);
 
     static Strings()
     {
@@ -18,6 +19,9 @@ public static class Strings
         Last.Add("Recently", "Last");
         Last.Add("Newest", "Last");
         Last.Add("New", "Last");
+
+        Next.Add("Next", "Last");
+        Next.Add("Nxt", "Last");
 
         Older.Add("Older then", "Older");
         Older.Add("Older than", "Older");
@@ -47,6 +51,7 @@ public static class Strings
         Year.Add("Years", "Year");
         Year.Add("Year's", "Year");
         Year.Add("Year(s)", "Year");
+        Year.Add("Yr", "Year");
     }
 
     public const string Tomorrow = "tomorrow";

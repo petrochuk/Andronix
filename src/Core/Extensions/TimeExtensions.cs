@@ -288,7 +288,8 @@ public static class TimeExtensions
     public static DateTimeOffset StartOfWeek(this DateTimeOffset dateTime, DayOfWeek startOfWeek)
     {
         int diff = (7 + (dateTime.DayOfWeek - startOfWeek)) % 7;
-        return dateTime.AddDays(-1 * diff).Date;
+        var date = dateTime.AddDays(-diff).Date;
+        return new DateTimeOffset(date.Year, date.Month, date.Day, 0, 0, 0, dateTime.Offset);
     }
 
     public static string ToTimeOfYear(this DateTimeOffset dateTime)

@@ -138,8 +138,8 @@ public class TasksAssistant : ISpecializedAssistant
         string title,
         [Description("New due date or empty")]
         string dueDate,
-        [Description("Done, New, Not Started, In Progress")]
-        string status)
+        [Description("notStarted, inProgress, completed, waitingOnOthers, deferred")]
+        string statusString)
     {
         var taskList = await GetTasks();
         var task = taskList.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.TodoTask.Title) && x.TodoTask.Title.Equals(title, StringComparison.OrdinalIgnoreCase));
@@ -159,18 +159,15 @@ public class TasksAssistant : ISpecializedAssistant
             }
         }
 
-        if (string.IsNullOrWhiteSpace(status))
+        if (Enum.TryParse<Microsoft.Graph.Beta.Models.TaskStatus>(statusString, true, out var taskStatus))
         {
-            var dueDateTimeOffset = dueDate.ToDateTimeOffset(TimeProvider.System);
-            task.TodoTask.DueDateTime = dueDateTimeOffset.ToDateTimeTimeZone();
-        }
-        else
-        {
-            task.TodoTask.Status = Microsoft.Graph.Beta.Models.TaskStatus.Completed;
+            task.TodoTask.Status = taskStatus;
             if (task.TodoTask.Recurrence?.Range?.Type == RecurrenceRangeType.NoEnd)
                 task.TodoTask.Recurrence.Range = null;
-        
         }
+
+        var dueDateTimeOffset = dueDate.ToDateTimeOffset(TimeProvider.System);
+        task.TodoTask.DueDateTime = dueDateTimeOffset.ToDateTimeTimeZone();
 
         var result = await _graphClient.Me.Todo.Lists[task.ListId].Tasks[task.TodoTask.Id].PatchAsync(task.TodoTask);
         return "Task updated";
