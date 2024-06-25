@@ -22,6 +22,10 @@ Invite link to: [Building AI Assistant](https://discord.gg/fknAQ2uJY4)
 - [x] Open Azure DevOps item such as Bug, Task, User Story, Feature in a browser
 - [x] Open Azure DevOps pull request in a browser
 
+## Demo
+
+<video src="assets/demos/userstory-demo.mp4" width="600" />
+
 ## Installation
 
 [Instructions](Install.md)
