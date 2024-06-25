@@ -264,7 +264,7 @@ public class Assistant
         _dialogPresenter.UpdateStatus("Sending prompt...");
         await _assistantClient.CreateMessageAsync(_openAiAssistantThread, MessageRole.User, [MessageContent.FromText(prompt)]);
         var runResponse = await _assistantClient.CreateRunAsync(_openAiAssistantThread, _openAiAssistant);
-        
+
         var stopWatch = new Stopwatch();
         stopWatch.Start();
         do
@@ -311,12 +311,8 @@ public class Assistant
             {
                 if (!string.IsNullOrWhiteSpace(contentItem.Text))
                 {
-                    if (threadMessage.Role == MessageRole.User)
-                        dialogHtml.Append($"<div style='color: white;'>{Markdown.ToHtml(contentItem.Text)}</div>");
-                    else if (threadMessage.Role == MessageRole.Assistant)
+                    if (threadMessage.Role == MessageRole.Assistant)
                         dialogHtml.Append($"<div style='color: MediumSeaGreen;'>Assistant: {Markdown.ToHtml(contentItem.Text)}</div>");
-                    else
-                        dialogHtml.Append($"<div style='color: white;'>{Markdown.ToHtml(contentItem.Text)}</div>");
                 }
             }
         }

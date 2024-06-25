@@ -1,8 +1,10 @@
 using Andronix.AssistantAI;
 using Andronix.Interfaces;
+using Markdig;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
+using System.Text;
 using System.Web;
 using Windows.System;
 
@@ -83,11 +85,15 @@ public sealed partial class MainWindow : Window, IDialogPresenter
             return;
 
         var promptText = _promptText.Text;
+        var promptHtml = new StringBuilder();
+        promptHtml.Append($"<div style='color: white;'>{Markdown.ToHtml(promptText)}</div>");
+        ShowDialog(promptHtml.ToString());
+        _promptText.Text = "";
+
         await _assistantTaskQueue.QueueBackgroundWorkItemAsync(async (cancellationToken) =>
         {
             await _assistant.SendPrompt(promptText);
         });
-        _promptText.Text = "";
     }
 
     private void PromptText_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
