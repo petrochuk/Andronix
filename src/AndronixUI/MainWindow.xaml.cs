@@ -3,8 +3,8 @@ using Andronix.Interfaces;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
+using System.Web;
 using Windows.System;
-using Windows.UI;
 
 namespace Andronix.UI;
 
@@ -57,9 +57,22 @@ public sealed partial class MainWindow : Window, IDialogPresenter
                 await _assistant.CreateAssistantAsync();
                 await _assistant.StartNewThreadAsync();
             });
+            await _responseView.EnsureCoreWebView2Async();
+            _responseView.NavigateToString(
+@"<html>
+    <style>
+        a:link, a:visited, a:hover, a:active 
+        {
+            color: DeepSkyBlue; 
+            background-color: transparent;
+        }
+    </style>
+    <body style='font-family: Consolas; font-size: 14px;'>
+    </body>
+</html>
+");
         }
 
-        await _responseView.EnsureCoreWebView2Async();
         _promptText.Focus(FocusState.Programmatic);
     }
 
@@ -111,9 +124,9 @@ public sealed partial class MainWindow : Window, IDialogPresenter
         if (DispatcherQueue == null)
             return;
 
-        bool isQueued = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+        bool isQueued = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, async () =>
         {
-            _responseView.NavigateToString(fullDialog);
+            var result = await _responseView.ExecuteScriptAsync($"document.body.insertAdjacentHTML('beforeend', '<p>{HttpUtility.JavaScriptStringEncode(fullDialog)}</p>');");
         });
     }
 

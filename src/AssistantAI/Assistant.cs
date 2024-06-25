@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Services.Common;
 using OpenAI.Assistants;
 using OpenAI.Files;
 using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
@@ -39,6 +40,7 @@ public class Assistant
     private TasksAssistant _tasksAssistant;
     private GitAssistant _gitAssistant;
     private AzDevOpsAssistant _azDevOpsAssistant;
+    private string _lastDispalayedMessageId = string.Empty;
 
     public Assistant(
         IDialogPresenter dialogPresenter,
@@ -291,13 +293,19 @@ public class Assistant
         while (!runResponse.Value.Status.IsTerminal);
 
         var afterRunMessagesResponse = _assistantClient.GetMessages(_openAiAssistantThread.Id, OpenAI.ListOrder.OldestFirst);
-
         var dialogHtml = new StringBuilder();
-        dialogHtml.Append("<html><style>a:link, a:visited, a:hover, a:active {color: DeepSkyBlue; background-color: transparent;}</style><body style='font-family: Consolas; font-size: 14px;'>");
 
         _dialogPresenter.UpdateStatus("Displaying response...");
+        bool skipDisplay = true;
         foreach (var threadMessage in afterRunMessagesResponse)
         {
+            if (skipDisplay && !string.IsNullOrWhiteSpace(_lastDispalayedMessageId))
+            {
+                if (threadMessage.Id == _lastDispalayedMessageId)
+                    skipDisplay = false;
+                continue;
+            }
+
             Console.Write($"{threadMessage.CreatedAt:yyyy-MM-dd HH:mm:ss} - {threadMessage.Role,10}: ");
             foreach (MessageContent contentItem in threadMessage.Content)
             {
@@ -312,6 +320,8 @@ public class Assistant
                 }
             }
         }
+
+        _lastDispalayedMessageId = afterRunMessagesResponse.Last().Id;
 
         _dialogPresenter.ShowDialog(dialogHtml.ToString());
         _dialogPresenter.UpdateStatus("Ready");
