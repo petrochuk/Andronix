@@ -14,6 +14,7 @@ public class TasksAssistant : ISpecializedAssistant
     #region Constants
     
     public const string TaskListNameDescription = "Task list name such as 'Flagged Emails', 'Tasks' or other task lists the person created";
+    public const string TaskStatusList = "notStarted, inProgress, completed, waitingOnOthers, deferred or empty";
     public const string DefaultTaskListName = "Tasks";
     public const string LinkedOutlook = "Outlook";
 
@@ -102,7 +103,7 @@ public class TasksAssistant : ISpecializedAssistant
         string dueDate,
         [Description("Task list name such as 'Flagged Emails', 'Tasks' or other task lists the person created")]
         string list,
-        [Description("Optional status: Done, New, In Progress")]
+        [Description(TaskStatusList)]
         string status)
     {
         var taskList = await GetTasks(list, refresh: true);
@@ -138,7 +139,7 @@ public class TasksAssistant : ISpecializedAssistant
         string title,
         [Description("New due date or empty")]
         string dueDate,
-        [Description("notStarted, inProgress, completed, waitingOnOthers, deferred")]
+        [Description(TaskStatusList)]
         string statusString)
     {
         var taskList = await GetTasks();

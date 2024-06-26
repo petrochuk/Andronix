@@ -281,8 +281,16 @@ public class Assistant
                     if (_functionsMap.TryGetValue(action.FunctionName, out var functionInstance))
                     {
                         _dialogPresenter.UpdateStatus($"Executing {action.FunctionName}...");
-                        var functionOutput = await functionInstance.Invoke(action.FunctionArguments);
-                        toolOutputs.Add(new ToolOutput(action.ToolCallId, functionOutput));
+                        try
+                        {
+                            var functionOutput = await functionInstance.Invoke(action.FunctionArguments);
+                            toolOutputs.Add(new ToolOutput(action.ToolCallId, functionOutput));
+                        }
+                        catch (Exception ex)
+                        {
+                            _dialogPresenter.UpdateStatus($"Failed to execute {action.FunctionName}...");
+                            toolOutputs.Add(new ToolOutput(action.ToolCallId, $"Faile to execute tool '{action.FunctionName}' with error message: {ex.Message}"));
+                        }
                     }
                 }
 
