@@ -14,7 +14,7 @@ public class TasksAssistant : ISpecializedAssistant
     #region Constants
     
     public const string TaskListNameDescription = "Task list name such as 'Flagged Emails', 'Tasks' or other task lists the person created";
-    public const string TaskStatusList = "notStarted, inProgress, completed, waitingOnOthers, deferred or empty";
+    public const string TaskStatusList = "examples: notStarted, inProgress, completed, waitingOnOthers, deferred or empty";
     public const string DefaultTaskListName = "Tasks";
     public const string LinkedOutlook = "Outlook";
 
@@ -133,7 +133,7 @@ public class TasksAssistant : ISpecializedAssistant
         return response.ToString();
     }
 
-    [Description("Update Task/ToDo status")]
+    [Description("Update Task/ToDo status or due date")]
     private async Task<string> UpdateTaskStatus(
         [Description("Task title"), Required]
         string title,
@@ -167,8 +167,11 @@ public class TasksAssistant : ISpecializedAssistant
                 task.TodoTask.Recurrence.Range = null;
         }
 
-        var dueDateTimeOffset = dueDate.ToDateTimeOffset(TimeProvider.System);
-        task.TodoTask.DueDateTime = dueDateTimeOffset.ToDateTimeTimeZone();
+        if (!string.IsNullOrWhiteSpace(dueDate))
+        {
+            var dueDateTimeOffset = dueDate.ToDateTimeOffset(TimeProvider.System);
+            task.TodoTask.DueDateTime = dueDateTimeOffset.ToDateTimeTimeZone();
+        }
 
         var result = await _graphClient.Me.Todo.Lists[task.ListId].Tasks[task.TodoTask.Id].PatchAsync(task.TodoTask);
         return "Task updated";
