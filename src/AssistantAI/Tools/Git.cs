@@ -1,9 +1,9 @@
 ﻿using Andronix.Interfaces;
 using System.ComponentModel;
 
-namespace Andronix.AssistantAI;
+namespace Andronix.AssistantAI.Tools;
 
-public class GitAssistant : ISpecializedAssistant
+public class Git : ISpecializedAssistant
 {
     #region Constants
     
@@ -11,7 +11,7 @@ public class GitAssistant : ISpecializedAssistant
 
     #region Fields & Constructors
 
-    public GitAssistant()
+    public Git()
     {
     }
 

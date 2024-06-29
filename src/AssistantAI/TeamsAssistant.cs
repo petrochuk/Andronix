@@ -1,8 +1,7 @@
-﻿using Microsoft.Graph.Beta.Models;
-using Microsoft.Graph.Beta;
-using Andronix.Interfaces;
-using Andronix.Core;
+﻿using Andronix.Interfaces;
 using Microsoft.Graph;
+using Microsoft.Graph.Beta;
+using Microsoft.Graph.Beta.Models;
 
 namespace Andronix.AssistantAI;
 

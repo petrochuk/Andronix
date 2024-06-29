@@ -13,9 +13,9 @@ using Microsoft.VisualStudio.Services.WebApi.Patch;
 using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 using System.ComponentModel;
 
-namespace Andronix.AssistantAI;
+namespace Andronix.AssistantAI.Tools;
 
-public class AzDevOpsAssistant : ISpecializedAssistant
+public class AzDevOps : ISpecializedAssistant
 {
     #region Constants
 
@@ -25,12 +25,12 @@ public class AzDevOpsAssistant : ISpecializedAssistant
 
     #region Fields & Constructors
 
-    AzDevOps _options;
+    Core.Options.AzDevOps _options;
     AzDevOpsAuthProvider _azDevOpsAuthProvider;
     WebApiTeam? _teamDetails;
     TeamSetting? _teamSetting;
 
-    public AzDevOpsAssistant(IOptions<AzDevOps> options, AzDevOpsAuthProvider azDevOpsAuthProvider)
+    public AzDevOps(IOptions<Core.Options.AzDevOps> options, AzDevOpsAuthProvider azDevOpsAuthProvider)
     {
         _ = options ?? throw new ArgumentNullException(nameof(options));
         _options = options.Value;

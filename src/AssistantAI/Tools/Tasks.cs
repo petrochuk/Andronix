@@ -7,9 +7,9 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace Andronix.AssistantAI;
+namespace Andronix.AssistantAI.Tools;
 
-public class TasksAssistant : ISpecializedAssistant
+public class Tasks : ISpecializedAssistant
 {
     #region Constants
     
@@ -27,7 +27,7 @@ public class TasksAssistant : ISpecializedAssistant
     List<TodoTaskList>? _taskLists;
     List<TaskInList>? _tasks;
 
-    public TasksAssistant(GraphServiceClient graphClient)
+    public Tasks(GraphServiceClient graphClient)
     {
         _graphClient = graphClient ?? throw new ArgumentNullException(nameof(graphClient));
     }

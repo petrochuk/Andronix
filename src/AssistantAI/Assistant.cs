@@ -37,9 +37,9 @@ public class Assistant
     private OpenAI.Assistants.AssistantThread? _openAiAssistantThread;
     private OpenAI.Files.FileClient _fileClient;
     private readonly Dictionary<string, FunctionToolInstance> _functionsMap = new(StringComparer.OrdinalIgnoreCase);
-    private TasksAssistant _tasksAssistant;
-    private GitAssistant _gitAssistant;
-    private AzDevOpsAssistant _azDevOpsAssistant;
+    private readonly Tools.Tasks _tasksTools;
+    private readonly Tools.Git _gitTools;
+    private readonly Tools.AzDevOps _azDevOpsTools;
     private string _lastDispalayedMessageId = string.Empty;
 
     public Assistant(
@@ -47,9 +47,9 @@ public class Assistant
         IOptions<Core.Options.Cognitive> cognitiveOptions, 
         IOptions<Core.Options.Assistant> assistantOptions,
         AndronixTokenCredential andronixTokenCredential,
-        TasksAssistant tasksAssistant,
-        GitAssistant gitAssistant,
-        AzDevOpsAssistant azDevOpsAssistant,
+        Tools.Tasks tasksTools,
+        Tools.Git gitTools,
+        Tools.AzDevOps azDevOpsTools,
         IAuthenticationProvider authenticationProvider) 
     {
         _dialogPresenter = dialogPresenter ?? throw new ArgumentNullException(nameof(dialogPresenter));
@@ -84,9 +84,9 @@ public class Assistant
             return graphClient;
         });
 
-        _tasksAssistant = tasksAssistant;
-        _gitAssistant = gitAssistant;
-        _azDevOpsAssistant = azDevOpsAssistant;
+        _tasksTools = tasksTools;
+        _gitTools = gitTools;
+        _azDevOpsTools = azDevOpsTools;
 
         InitializeFunctions();
     }
@@ -94,9 +94,9 @@ public class Assistant
     private void InitializeFunctions()
     {
         InitializeFunctions(this);
-        InitializeFunctions(_tasksAssistant);
-        InitializeFunctions(_gitAssistant);
-        InitializeFunctions(_azDevOpsAssistant);
+        InitializeFunctions(_tasksTools);
+        InitializeFunctions(_gitTools);
+        InitializeFunctions(_azDevOpsTools);
     }
 
     private void InitializeFunctions(object typeInstance)

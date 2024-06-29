@@ -14,10 +14,10 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<QueuedAssistantService>();
         services.AddTransient<Assistant>();
         services.AddTransient(s => new GraphServiceClient(s.GetRequiredService<IAuthenticationProvider>()));
-        services.AddTransient<TasksAssistant>();
-        services.AddTransient<GitAssistant>();
+        services.AddTransient<Tools.Tasks>();
+        services.AddTransient<Tools.Git>();
+        services.AddTransient<Tools.AzDevOps>();
         services.AddTransient<TeamsAssistant>();
-        services.AddTransient<AzDevOpsAssistant>();
         services.AddSingleton<IBackgroundTaskQueue, AssistantTaskQueue>();
 
         return services;
