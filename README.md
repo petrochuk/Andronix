@@ -16,6 +16,7 @@ Invite link to: [Building AI Assistant](https://discord.gg/fknAQ2uJY4)
 
 ## Assistant can help you with:
 
+- [x] Send message on Teams on your behalf
 - [x] List your tasks and flagged emails
 - [x] Create a new task
 - [x] Mark a task as complete
