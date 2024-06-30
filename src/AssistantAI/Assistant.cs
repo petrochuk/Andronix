@@ -40,6 +40,7 @@ public class Assistant
     private readonly Tools.Tasks _tasksTools;
     private readonly Tools.Git _gitTools;
     private readonly Tools.AzDevOps _azDevOpsTools;
+    private readonly Tools.Teams _teamsTools;
     private string _lastDispalayedMessageId = string.Empty;
 
     public Assistant(
@@ -50,6 +51,7 @@ public class Assistant
         Tools.Tasks tasksTools,
         Tools.Git gitTools,
         Tools.AzDevOps azDevOpsTools,
+        Tools.Teams teamsTools,
         IAuthenticationProvider authenticationProvider) 
     {
         _dialogPresenter = dialogPresenter ?? throw new ArgumentNullException(nameof(dialogPresenter));
@@ -87,6 +89,7 @@ public class Assistant
         _tasksTools = tasksTools;
         _gitTools = gitTools;
         _azDevOpsTools = azDevOpsTools;
+        _teamsTools = teamsTools;
 
         InitializeFunctions();
     }
@@ -97,6 +100,7 @@ public class Assistant
         InitializeFunctions(_tasksTools);
         InitializeFunctions(_gitTools);
         InitializeFunctions(_azDevOpsTools);
+        InitializeFunctions(_teamsTools);
     }
 
     private void InitializeFunctions(object typeInstance)
@@ -343,18 +347,5 @@ public class Assistant
         var user = await _graphClient.Value.Me.GetAsync();
         if (user == null)
             throw new InvalidOperationException("Failed to get user details.");
-    }
-
-    public async Task SendTeamsMessage(string chatId)
-    {
-        var chatMessageToSend = new ChatMessage
-        {
-            Body = new ItemBody
-            {
-                Content = "Hello!",
-            },
-        };
-
-        var chatMessage = await _graphClient.Value.Me.Chats[chatId].Messages.PostAsync(chatMessageToSend);
     }
 }
