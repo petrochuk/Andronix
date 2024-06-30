@@ -8,7 +8,8 @@ namespace Andronix.Authentication;
 
 internal class GraphAuthenticationProvider : IAuthenticationProvider
 {
-	IPublicClientApplication? _publicClientApplication;
+	IPublicClientApplication? _publicClientApplicationDefault;
+    IPublicClientApplication? _publicClientApplicationForChats;
     private readonly IOptions<Core.Options.Graph> _graphOptions;
 
     public GraphAuthenticationProvider(IOptions<Core.Options.Graph> graphOptions)
@@ -20,19 +21,40 @@ internal class GraphAuthenticationProvider : IAuthenticationProvider
 		Dictionary<string, object>? additionalAuthenticationContext,
 		CancellationToken cancellationToken)
 	{
-		if (_publicClientApplication == null)
-		{
-			var appBuilder = PublicClientApplicationBuilder.Create(_graphOptions.Value.ClientId);
+        IPublicClientApplication publicClientApplication;
 
-			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-			{
-				appBuilder.WithBroker(new BrokerOptions(BrokerOptions.OperatingSystems.Windows));
-			}
+        if (request.URI.AbsolutePath.StartsWith("/beta/me/chats", StringComparison.OrdinalIgnoreCase))
+        {
+            if (_publicClientApplicationForChats == null)
+            {
+                var appBuilder = PublicClientApplicationBuilder.Create(_graphOptions.Value.ChatsClientId);
 
-            _publicClientApplication = appBuilder.Build();
-		}
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    appBuilder.WithBroker(new BrokerOptions(BrokerOptions.OperatingSystems.Windows));
+                }
 
-		var result = await _publicClientApplication.AcquireTokenSilent(
+                _publicClientApplicationForChats = appBuilder.Build();
+            }
+            publicClientApplication = _publicClientApplicationForChats;
+        }
+        else
+        {
+            if (_publicClientApplicationDefault == null)
+            {
+                var appBuilder = PublicClientApplicationBuilder.Create(_graphOptions.Value.ClientId);
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    appBuilder.WithBroker(new BrokerOptions(BrokerOptions.OperatingSystems.Windows));
+                }
+
+                _publicClientApplicationDefault = appBuilder.Build();
+            }
+            publicClientApplication = _publicClientApplicationDefault;
+        }
+
+        var result = await publicClientApplication.AcquireTokenSilent(
             ["https://graph.microsoft.com//.default"],
             PublicClientApplication.OperatingSystemAccount).ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
