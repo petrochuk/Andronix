@@ -36,8 +36,8 @@ public class Tasks : ISpecializedAssistant
 
     #region AI Functions
 
-    [Description("Creates new Task/ToDo for the person you are assisting")]
-    private async Task<string> CreateTask(
+    [Description("Creates new user Task/ToDo")]
+    private async Task<string> CreateUserTask(
         [Description("Task title")]
         string title,
         [Description("Longer task description (without due date)")]
@@ -68,8 +68,8 @@ public class Tasks : ISpecializedAssistant
         return "Task created";
     }
 
-    [Description("Gets Task/ToDo details such as description, due time, attachments, steps etc")]
-    private async Task<string> GetTaskDetails(
+    [Description("Gets user Task/ToDo details such as description, due time, attachments, steps etc")]
+    private async Task<string> GetUserTaskDetails(
         [Description("Task title")]
         string title)
     {
@@ -97,8 +97,8 @@ public class Tasks : ISpecializedAssistant
         return response.ToString();
     }
 
-    [Description("Gets Tasks/ToDos for the person you are assisting")]
-    private async Task<string> GetTasks(
+    [Description("Fetches the list of user Tasks/To-Dos")]
+    private async Task<string> GetUserTasks(
         [Description("It can be nothing for all, tomorrow, next week etc")]
         string dueDate,
         [Description("Task list name such as 'Flagged Emails', 'Tasks' or other task lists the person created")]
@@ -133,8 +133,8 @@ public class Tasks : ISpecializedAssistant
         return response.ToString();
     }
 
-    [Description("Update Task/ToDo status or due date")]
-    private async Task<string> UpdateTaskStatus(
+    [Description("Update user Task/ToDo status or due date")]
+    private async Task<string> UpdateUserTaskStatus(
         [Description("Task title"), Required]
         string title,
         [Description("New due date or empty")]
