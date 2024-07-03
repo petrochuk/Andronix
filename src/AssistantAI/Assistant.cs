@@ -1,6 +1,7 @@
 #region Usings
 using Andronix.Authentication;
 using Andronix.Core;
+using Andronix.Core.Extensions;
 using Andronix.Interfaces;
 using Azure.AI.OpenAI;
 using Markdig;
@@ -248,7 +249,12 @@ public class Assistant
         threadOptions.InitialMessages.Add(
             new ThreadInitializationMessage(
                 MessageRole.Assistant, 
-                [MessageContent.FromText("I am your assistant. I am here ready to help")])
+                [   
+                    MessageContent.FromText($"Today is {DateTime.Now:F} {TimeZoneInfo.Local.DisplayName}"),
+                    MessageContent.FromText($"It is {DateTimeOffset.Now.ToTimeOfYear()}"),
+                    MessageContent.FromText($"It is {DateTimeOffset.Now.ToTimeOfDay()}"),
+                    MessageContent.FromText("I am your assistant. I am here ready to help"),
+                ])
         );
         var createThreadResponse = await _assistantClient.CreateThreadAsync(threadOptions);
         if (createThreadResponse == null)
