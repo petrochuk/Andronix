@@ -241,10 +241,15 @@ public class Assistant
     public async Task StartNewThreadAsync()
     {
         if (_openAiAssistant == null)
-            throw new InvalidOperationException("Assistant not created.");
+            throw new InvalidOperationException("Assistant was not created.");
 
         _dialogPresenter.UpdateStatus("Creating thread...");
         var threadOptions = new ThreadCreationOptions();
+        threadOptions.InitialMessages.Add(
+            new ThreadInitializationMessage(
+                MessageRole.Assistant, 
+                [MessageContent.FromText("I am your assistant. I am here ready to help")])
+        );
         var createThreadResponse = await _assistantClient.CreateThreadAsync(threadOptions);
         if (createThreadResponse == null)
             throw new InvalidOperationException("Failed to create thread.");
@@ -311,6 +316,10 @@ public class Assistant
         bool skipDisplay = true;
         foreach (var threadMessage in afterRunMessagesResponse)
         {
+            // Skip assistant messages without run id (initial messages)
+            if (threadMessage.Role == MessageRole.Assistant && threadMessage.RunId == null)
+                continue;
+
             if (skipDisplay && !string.IsNullOrWhiteSpace(_lastDispalayedMessageId))
             {
                 if (threadMessage.Id == _lastDispalayedMessageId)
