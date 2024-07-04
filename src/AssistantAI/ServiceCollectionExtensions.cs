@@ -16,6 +16,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient(s => new GraphServiceClient(s.GetRequiredService<IAuthenticationProvider>()));
         services.AddTransient<Tools.Tasks>();
         services.AddTransient<Tools.Git>();
+        services.AddTransient<Tools.FileSystem>();
         services.AddTransient<Tools.AzDevOps>();
         services.AddTransient<Tools.Teams>();
         services.AddTransient<TeamsAssistant>();
