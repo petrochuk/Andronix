@@ -5,6 +5,7 @@ using Microsoft.Graph.Beta;
 using Microsoft.Graph.Beta.Models;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Net.Mail;
 using System.Text;
 
 namespace Andronix.AssistantAI.Tools;
@@ -15,6 +16,8 @@ public class Tasks : ISpecializedAssistant
     
     public const string TaskListNameDescription = "Task list name such as 'Flagged Emails', 'Tasks' or other task lists the person created";
     public const string TaskStatusList = "examples: notStarted, inProgress, completed, waitingOnOthers, deferred or empty";
+    public const string TaskTitle = "Title";
+    public const string TaskContent = "Content";
     public const string DefaultTaskListName = "Tasks";
     public const string LinkedOutlook = "Outlook";
 
@@ -38,10 +41,10 @@ public class Tasks : ISpecializedAssistant
 
     [Description("Creates new user Task/ToDo")]
     private async Task<string> CreateUserTask(
-        [Description("Task title")]
+        [Description(TaskTitle)]
         string title,
-        [Description("Longer task description (without due date)")]
-        string description,
+        [Description(TaskContent)]
+        string content,
         [Description(TaskListNameDescription)]
         string list,
         [Description("Suggested due day which can be in date format or relative such as tomorrow, next week etc")]
@@ -54,7 +57,7 @@ public class Tasks : ISpecializedAssistant
             Title = title,
             Body = new ItemBody
             {
-                Content = description,
+                Content = content,
                 ContentType = BodyType.Text
             },
             DueDateTime = new DateTimeTimeZone
@@ -70,7 +73,7 @@ public class Tasks : ISpecializedAssistant
 
     [Description("Gets user Task/ToDo details such as description, due time, attachments, steps etc")]
     private async Task<string> GetUserTaskDetails(
-        [Description("Task title")]
+        [Description(TaskTitle)]
         string title)
     {
         var taskList = await GetTasks();
@@ -111,6 +114,10 @@ public class Tasks : ISpecializedAssistant
             return "No tasks found.";
 
         var response = new StringBuilder();
+        response.AppendLine($"# User's tasks and/or falgged emails");
+        response.AppendLine();
+        response.AppendLine($"> **Note to assistant:** you can add short one sentence next step for each");
+
         foreach (var task in taskList.OrderBy(x => x.TodoTask.DueDateTime?.DateTime))
         {
             bool isHandled = false;
@@ -120,32 +127,48 @@ public class Tasks : ISpecializedAssistant
                 {
                     if (linkedResource.ApplicationName == LinkedOutlook)
                     {
-                        response.AppendLine($"[{linkedResource.DisplayName}]({linkedResource.WebUrl})");
+                        response.AppendLine();
+                        response.AppendLine($"## [{linkedResource.DisplayName}]({linkedResource.WebUrl})");
+                        response.AppendLine();
+                        response.AppendLine($"- List: Flagged email");
                         isHandled = true;
+                        break;
                     }
                 }
             }
 
-            if (!isHandled)
-                response.AppendLine($"{task.TodoTask.Title}");
+            if (isHandled)
+                continue;
+
+            response.AppendLine();
+            response.AppendLine($"## {task.TodoTask.Title}");
+            response.AppendLine();
+            response.AppendLine($"- List: Task");
+            response.AppendLine($"- Status: {task.TodoTask.Status}");
+            response.AppendLine($"- DueDateTime: {task.TodoTask.DueDateTime?.DateTime}");
+            response.AppendLine($"- Details: {task.TodoTask.Body?.Content}");
         }
 
         return response.ToString();
     }
 
-    [Description("Update user Task/ToDo status or due date")]
+    [Description("Update user Task/ToDo title, content, status or due date")]
     private async Task<string> UpdateUserTaskStatus(
-        [Description("Task title"), Required]
-        string title,
+        [Description("Old title to find task"), Required]
+        string oldTitle,
+        [Description("Updated title"), Required]
+        string newTitle,
+        [Description(TaskContent)]
+        string? content,
         [Description("New due date or empty")]
-        string dueDate,
+        string? dueDate,
         [Description(TaskStatusList)]
-        string statusString)
+        string? statusString)
     {
         var taskList = await GetTasks();
-        var task = taskList.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.TodoTask.Title) && x.TodoTask.Title.Equals(title, StringComparison.OrdinalIgnoreCase));
+        var task = taskList.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.TodoTask.Title) && x.TodoTask.Title.Equals(oldTitle, StringComparison.OrdinalIgnoreCase));
         if (task == null)
-            return $"Task '{title}' not found.";
+            return $"Task '{oldTitle}' not found.";
 
         // Delete task if it is linked to Outlook
         if (task.TodoTask.LinkedResources != null)
@@ -158,6 +181,20 @@ public class Tasks : ISpecializedAssistant
                     return $"Done";
                 }
             }
+        }
+
+        if (!string.IsNullOrWhiteSpace(newTitle))
+        {
+            task.TodoTask.Title = newTitle;
+        }
+
+        if (!string.IsNullOrWhiteSpace(content))
+        {
+            task.TodoTask.Body = new ItemBody
+            {
+                Content = content,
+                ContentType = BodyType.Text
+            };
         }
 
         if (Enum.TryParse<Microsoft.Graph.Beta.Models.TaskStatus>(statusString, true, out var taskStatus))

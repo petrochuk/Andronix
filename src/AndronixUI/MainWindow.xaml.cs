@@ -73,6 +73,11 @@ public sealed partial class MainWindow : Window, IDialogPresenter
     </body>
 </html>
 ");
+
+            await _assistantTaskQueue.QueueBackgroundWorkItemAsync(async (cancellationToken) =>
+            {
+                await _assistant.SendPrompt("hi, what are my next tasks?");
+            });
         }
 
         _promptText.Focus(FocusState.Programmatic);
