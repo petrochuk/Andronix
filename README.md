@@ -20,7 +20,8 @@ Invite link to: [Building AI Assistant](https://discord.gg/fknAQ2uJY4)
 - [x] List your tasks and flagged emails
 - [x] Create a new task
 - [x] Mark a task as complete
-- [x] Open local folders
+- [x] Open local folders and files
+- [x] Append text to a file
 - [x] Create a new user story in Azure DevOps
 - [x] Open Azure DevOps item such as Bug, Task, User Story, Feature in a browser
 - [x] Open Azure DevOps pull request in a browser
