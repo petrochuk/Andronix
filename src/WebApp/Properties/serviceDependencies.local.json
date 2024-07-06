@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "identityapp1": {
-      "connectionInfo": "App registration: Andronix, Tenant: Default Directory (petrochukmsn.onmicrosoft.com - Microsoft Entra ID)",
+      "connectionInfo": "App registration: Andronix WebApp, Tenant: Default Directory (petrochukmsn.onmicrosoft.com - Microsoft Entra ID)",
       "secretStore": "LocalSecretsFile",
       "resourceId": null,
       "type": "identityapp.secretStore",

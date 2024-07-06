@@ -2,5 +2,5 @@
 
 public class UserSettings
 {
-    public required string AssistantId { get; set; }
+    public string? AssistantId { get; set; }
 }

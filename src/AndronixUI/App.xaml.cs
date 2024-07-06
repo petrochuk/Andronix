@@ -21,11 +21,9 @@ public partial class App : Application, IApplication
     /// Initializes the singleton application object.  This is the first line of authored code
     /// executed, and as such is the logical equivalent of main() or WinMain().
     /// </summary>
-    public App(TeamsAssistant teamsAssistant)
+    public App()
     {
         InitializeComponent();
-
-        _teamsAssistant = teamsAssistant ?? throw new ArgumentNullException(nameof(teamsAssistant));
     }
 
     #region IAppHost
@@ -47,6 +45,7 @@ public partial class App : Application, IApplication
     {
         _window = Program.Host.Services.GetRequiredService<MainWindow>();
         _intelligenceGatherer = Program.Host.Services.GetRequiredService<TeamsKnowledgeCollector>();
+        _teamsAssistant = Program.Host.Services.GetRequiredService<TeamsAssistant>();
 #if DEBUG
         //_intelligenceGatherer.Start();
         //_teamsAssistant.Start();

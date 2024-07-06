@@ -13,7 +13,7 @@ public static class ServiceCollectionExtensions
 
         services.AddHostedService<QueuedAssistantService>();
         services.AddTransient<Assistant>();
-        services.AddTransient(s => new GraphServiceClient(s.GetRequiredService<IAuthenticationProvider>()));
+        services.AddTransient<GraphServiceClient>();
         services.AddTransient<Tools.Tasks>();
         services.AddTransient<Tools.Git>();
         services.AddTransient<Tools.FileSystem>();

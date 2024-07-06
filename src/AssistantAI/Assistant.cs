@@ -69,6 +69,14 @@ public class Assistant
             // Read from local JSON file
             try
             {
+                if (string.IsNullOrWhiteSpace(_assistantOptions.UserSettings)) {
+                    _assistantOptions.UserSettings = SpecialPath.UserSettings;
+                    if (!Directory.Exists(Path.GetDirectoryName(_assistantOptions.UserSettings))) {
+                        Directory.CreateDirectory(Path.GetDirectoryName(_assistantOptions.UserSettings));
+                    }
+                    return new Core.UserSettings();
+                }
+
                 var userSettings = JsonSerializer.Deserialize(File.ReadAllText(_assistantOptions.UserSettings), SourceGenerationContext.Default.UserSettings);
                 if (userSettings == null)
                     throw new InvalidOperationException($"Failed to read user settings from {_assistantOptions.UserSettings}");

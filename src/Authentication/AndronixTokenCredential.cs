@@ -1,5 +1,4 @@
-﻿using Andronix.Core;
-using Andronix.Interfaces;
+﻿using Andronix.Interfaces;
 using Azure.Core;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Broker;
@@ -22,17 +21,17 @@ public class AndronixTokenCredential : TokenCredential
         {
             var brokerOptions = new BrokerOptions(BrokerOptions.OperatingSystems.Windows) 
             { 
-                Title = appHost.Title
+                Title = appHost.Title,
+                ListOperatingSystemAccounts = true
             };
 
             PublicClientApplicationForCognitiveServices = PublicClientApplicationBuilder.Create(cognitiveOptions.Value.ClientIdForCognitiveServices)
-                .WithDefaultRedirectUri()
                 .WithLogging((level, message, containsPii) =>
                 {
                     Debug.WriteLine($"MSAL: {level} {message} ");
                 }, LogLevel.Verbose, enablePiiLogging: true, enableDefaultPlatformLogging: true)
-                .WithParentActivityOrWindow(() => appHost.GetMainWindowHandle())
-                .WithInstanceDiscovery(false)
+                .WithParentActivityOrWindow(appHost.GetMainWindowHandle)
+                .WithTenantId(cognitiveOptions.Value.TenantIdForCognitiveServices)
                 .WithBroker(brokerOptions)
                 .Build();
         }
@@ -52,8 +51,20 @@ public class AndronixTokenCredential : TokenCredential
 
         try
         {
-            result = await PublicClientApplicationForCognitiveServices.AcquireTokenSilent(
-                CognitiveServicesScope, PublicClientApplication.OperatingSystemAccount).ExecuteAsync();
+            var accounts = await PublicClientApplicationForCognitiveServices.GetAccountsAsync();
+            if (accounts.Count() == 1) 
+            {
+                // Attempt to get a token from the cache (or refresh it silently if needed)
+                result = await PublicClientApplicationForCognitiveServices.AcquireTokenSilent(
+                    CognitiveServicesScope, accounts.First()).ExecuteAsync();
+            }
+            else
+            {
+                // Attempt to get a token from the cache (or refresh it silently if needed)
+                result = await PublicClientApplicationForCognitiveServices.AcquireTokenSilent(
+                    CognitiveServicesScope, PublicClientApplication.OperatingSystemAccount)
+                    .ExecuteAsync();
+            }
         }
         catch (MsalUiRequiredException ex)
         {
@@ -61,7 +72,6 @@ public class AndronixTokenCredential : TokenCredential
             {
                 // If the token has expired, prompt the user with a login prompt
                 result = await PublicClientApplicationForCognitiveServices.AcquireTokenInteractive(CognitiveServicesScope)
-                        .WithTenantId(_cognitiveOptions.Value.TenantIdForCognitiveServices)
                         .WithAccount(PublicClientApplication.OperatingSystemAccount)
                         .WithClaims(ex.Claims)
                         .ExecuteAsync();
