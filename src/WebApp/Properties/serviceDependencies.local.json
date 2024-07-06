@@ -1,8 +1,11 @@
 {
   "dependencies": {
     "identityapp1": {
-      "connectionInfo": "App registration: DPX AI Assistant, Tenant: Microsoft (microsoft.onmicrosoft.com - Microsoft Entra ID)",
-      "type": "identityapp.default"
+      "connectionInfo": "App registration: Andronix, Tenant: Default Directory (petrochukmsn.onmicrosoft.com - Microsoft Entra ID)",
+      "secretStore": null,
+      "resourceId": null,
+      "type": "identityapp.secretStore",
+      "connectionId": "AzureAD:ClientSecret"
     }
   }
 }
