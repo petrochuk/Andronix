@@ -19,6 +19,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<Tools.FileSystem>();
         services.AddTransient<Tools.AzDevOps>();
         services.AddTransient<Tools.Teams>();
+        services.AddTransient<Tools.Outlook>();
         services.AddTransient<TeamsAssistant>();
         services.AddSingleton<IBackgroundTaskQueue, AssistantTaskQueue>();
 

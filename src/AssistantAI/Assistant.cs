@@ -43,6 +43,7 @@ public class Assistant
     private readonly Tools.AzDevOps _azDevOpsTools;
     private readonly Tools.Teams _teamsTools;
     private readonly Tools.FileSystem _fileSystemTools;
+    private readonly Tools.Outlook _outlookTools;
     private string _lastDispalayedMessageId = string.Empty;
 
     public Assistant(
@@ -55,6 +56,7 @@ public class Assistant
         Tools.AzDevOps azDevOpsTools,
         Tools.Teams teamsTools,
         Tools.FileSystem fileSystemTools,
+        Tools.Outlook outlookTools,
         IAuthenticationProvider authenticationProvider) 
     {
         _dialogPresenter = dialogPresenter ?? throw new ArgumentNullException(nameof(dialogPresenter));
@@ -94,6 +96,7 @@ public class Assistant
         _azDevOpsTools = azDevOpsTools;
         _teamsTools = teamsTools;
         _fileSystemTools = fileSystemTools;
+        _outlookTools = outlookTools;
 
         InitializeFunctions();
     }
@@ -106,6 +109,7 @@ public class Assistant
         InitializeFunctions(_azDevOpsTools);
         InitializeFunctions(_teamsTools);
         InitializeFunctions(_fileSystemTools);
+        InitializeFunctions(_outlookTools);
     }
 
     private void InitializeFunctions(object typeInstance)
