@@ -14,12 +14,11 @@ Join our Discord server to discuss the project and get help with any issues you 
 
 Invite link to: [Building AI Assistant](https://discord.gg/fknAQ2uJY4)
 
-## Assistant can help you with:
+## Assistant can help you:
 
 - [x] Send message on Teams on your behalf
 - [x] List your tasks and flagged emails
-- [x] Create a new task
-- [x] Mark a task as complete
+- [x] Create and update a new task
 - [x] Open local folders and files
 - [x] Append text to a file
 - [x] Create a new user story in Azure DevOps
