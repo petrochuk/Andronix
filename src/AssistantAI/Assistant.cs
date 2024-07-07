@@ -205,7 +205,7 @@ public class Assistant
 
         var instructions = new StringBuilder();
         if (string.IsNullOrWhiteSpace(_assistantOptions.Instructions))
-            instructions.AppendLine(@"You are a personal assistant.");
+            instructions.AppendLine(@"Conversation between the user and the personal assistant.");
         else
             instructions.AppendLine(File.ReadAllText(_assistantOptions.Instructions));
 

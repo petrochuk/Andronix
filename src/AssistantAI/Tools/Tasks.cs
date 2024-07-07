@@ -5,7 +5,6 @@ using Microsoft.Graph.Beta;
 using Microsoft.Graph.Beta.Models;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Net.Mail;
 using System.Text;
 
 namespace Andronix.AssistantAI.Tools;
@@ -170,6 +169,19 @@ public class Tasks : ISpecializedAssistant
         if (task == null)
             return $"Task '{oldTitle}' not found.";
 
+        if (!string.IsNullOrWhiteSpace(dueDate))
+        {
+            var dueDateTimeOffset = dueDate.ToDateTimeOffset(TimeProvider.System);
+            task.Task.DueDateTime = dueDateTimeOffset.ToDateTimeTimeZone();
+        }
+
+        if (Enum.TryParse<Microsoft.Graph.Beta.Models.TaskStatus>(statusString, true, out var taskStatus))
+        {
+            task.Task.Status = taskStatus;
+            if (task.Task.Recurrence?.Range?.Type == RecurrenceRangeType.NoEnd)
+                task.Task.Recurrence.Range = null;
+        }
+
         // Delete task if it is linked to Outlook
         if (task.Task.LinkedResources != null)
         {
@@ -177,7 +189,19 @@ public class Tasks : ISpecializedAssistant
             {
                 if (linkedResource.ApplicationName == LinkedOutlook)
                 {
-                    await _graphClient.Me.Todo.Lists[task.TaskList.Id].Tasks[task.Task.Id].DeleteAsync();
+                    if (task.Task.Status == Microsoft.Graph.Beta.Models.TaskStatus.Completed)
+                        await _graphClient.Me.Todo.Lists[task.TaskList.Id].Tasks[task.Task.Id].DeleteAsync();
+                    else
+                    {
+                        var email = await _graphClient.Me.Messages[linkedResource.ExternalId].GetAsync();
+                        if (email.Flag == null)
+                        {
+                            email.Flag = new FollowupFlag() { FlagStatus = FollowupFlagStatus.Flagged };
+                        }
+                        email.Flag.DueDateTime = task.Task.DueDateTime;
+                        await _graphClient.Me.Messages[linkedResource.ExternalId].PatchAsync(email);
+                    }
+
                     return $"Done";
                 }
             }
@@ -195,19 +219,6 @@ public class Tasks : ISpecializedAssistant
                 Content = content,
                 ContentType = BodyType.Text
             };
-        }
-
-        if (Enum.TryParse<Microsoft.Graph.Beta.Models.TaskStatus>(statusString, true, out var taskStatus))
-        {
-            task.Task.Status = taskStatus;
-            if (task.Task.Recurrence?.Range?.Type == RecurrenceRangeType.NoEnd)
-                task.Task.Recurrence.Range = null;
-        }
-
-        if (!string.IsNullOrWhiteSpace(dueDate))
-        {
-            var dueDateTimeOffset = dueDate.ToDateTimeOffset(TimeProvider.System);
-            task.Task.DueDateTime = dueDateTimeOffset.ToDateTimeTimeZone();
         }
 
         var result = await _graphClient.Me.Todo.Lists[task.TaskList.Id].Tasks[task.Task.Id].PatchAsync(task.Task);
