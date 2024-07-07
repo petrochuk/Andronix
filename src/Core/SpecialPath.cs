@@ -5,4 +5,6 @@ public static class SpecialPath
     public static string AppData => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Andronix");
 
     public static string UserSettings => Path.Combine(AppData, "userSettings.json");
+
+    public static string AssistantNotes => Path.Combine(AppData, "notes.md");
 }

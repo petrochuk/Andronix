@@ -44,6 +44,7 @@ public class Assistant
     private readonly Tools.Teams _teamsTools;
     private readonly Tools.FileSystem _fileSystemTools;
     private readonly Tools.Outlook _outlookTools;
+    private readonly Tools.Notes _notesTools;
     private string _lastDispalayedMessageId = string.Empty;
 
     public Assistant(
@@ -57,6 +58,7 @@ public class Assistant
         Tools.Teams teamsTools,
         Tools.FileSystem fileSystemTools,
         Tools.Outlook outlookTools,
+        Tools.Notes notesTools,
         IAuthenticationProvider authenticationProvider) 
     {
         _dialogPresenter = dialogPresenter ?? throw new ArgumentNullException(nameof(dialogPresenter));
@@ -105,6 +107,7 @@ public class Assistant
         _teamsTools = teamsTools;
         _fileSystemTools = fileSystemTools;
         _outlookTools = outlookTools;
+        _notesTools = notesTools;
 
         InitializeFunctions();
     }
@@ -118,6 +121,7 @@ public class Assistant
         InitializeFunctions(_teamsTools);
         InitializeFunctions(_fileSystemTools);
         InitializeFunctions(_outlookTools);
+        InitializeFunctions(_notesTools);
     }
 
     private void InitializeFunctions(object typeInstance)
@@ -272,6 +276,20 @@ public class Assistant
                     MessageContent.FromText("I am your assistant. I am here ready to help"),
                 ])
         );
+        if (File.Exists(SpecialPath.AssistantNotes))
+        {
+            var notes = File.ReadAllText(SpecialPath.AssistantNotes);
+            threadOptions.InitialMessages.Add(
+                new ThreadInitializationMessage(
+                    MessageRole.Assistant,
+                    [MessageContent.FromText("Start of assistant notes from previous conversations"),
+                     MessageContent.FromText(notes),
+                     MessageContent.FromText("End of assistant notes from previous conversations.")
+                    ]
+                )
+            );
+        }
+
         var createThreadResponse = await _assistantClient.CreateThreadAsync(threadOptions);
         if (createThreadResponse == null)
             throw new InvalidOperationException("Failed to create thread.");
