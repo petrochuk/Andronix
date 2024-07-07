@@ -9,8 +9,8 @@ namespace Andronix.Authentication;
 
 internal class GraphAuthenticationProvider : IAuthenticationProvider
 {
-    private static string[] GraphScope = ["https://graph.microsoft.com/User.Read Mail.ReadWrite Tasks.ReadWrite Chat.ReadWrite.All ChatMessage.Send"];
-	IPublicClientApplication? _publicClientApplicationDefault;
+    private static string[] GraphScope = ["https://graph.microsoft.com/.default"];
+    IPublicClientApplication? _publicClientApplicationDefault;
     IPublicClientApplication? _publicClientApplicationForChats;
     private readonly IOptions<Core.Options.Graph> _graphOptions;
     IAccount? _account;
