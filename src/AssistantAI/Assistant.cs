@@ -73,8 +73,8 @@ public class Assistant
                     _assistantOptions.UserSettings = SpecialPath.UserSettings;
                     if (!Directory.Exists(Path.GetDirectoryName(_assistantOptions.UserSettings))) {
                         Directory.CreateDirectory(Path.GetDirectoryName(_assistantOptions.UserSettings));
+                        return new Core.UserSettings();
                     }
-                    return new Core.UserSettings();
                 }
 
                 var userSettings = JsonSerializer.Deserialize(File.ReadAllText(_assistantOptions.UserSettings), SourceGenerationContext.Default.UserSettings);
