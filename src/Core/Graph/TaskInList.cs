@@ -3,16 +3,16 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Andronix.Core.Graph;
 
-[DebuggerDisplay("{TodoTask.Title}")]
+[DebuggerDisplay("{Task.Title} {TaskList.DisplayName}")]
 public class TaskInList
 {
     [SetsRequiredMembers]
-    public TaskInList(TodoTask todoTask, string? listId)
+    public TaskInList(TodoTask task, TodoTaskList taskList)
     {
-        TodoTask = todoTask ?? throw new ArgumentNullException(nameof(todoTask));
-        ListId = listId ?? throw new ArgumentNullException(nameof(listId));
+        Task = task ?? throw new ArgumentNullException(nameof(task));
+        TaskList = taskList ?? throw new ArgumentNullException(nameof(taskList));
     }
 
-    public required TodoTask TodoTask { get; init; }
-    public required string ListId { get; init; }
+    public required TodoTask Task { get; init; }
+    public required TodoTaskList TaskList { get; init; }
 }
