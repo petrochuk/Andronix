@@ -9,7 +9,7 @@
     Activated="Window_Activated"
     mc:Ignorable="d">
     
-    <Grid>
+    <Grid x:Name="_mainGrid" >
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>

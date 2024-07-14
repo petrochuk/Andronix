@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Content Include="Assets\**" />
+    <None Remove="Dialogs\ActionConfirmation.xaml" />
     <Content Include="assistant.ico" />
   </ItemGroup>
 
@@ -46,6 +47,11 @@
     <None Include="appSettings.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Dialogs\ActionConfirmation.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <!--

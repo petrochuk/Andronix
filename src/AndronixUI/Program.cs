@@ -1,6 +1,5 @@
 ﻿using Andronix.AssistantAI;
 using Andronix.Authentication;
-using Andronix.Core;
 using Andronix.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -20,7 +19,9 @@ internal class Program
             {
                 var configuration = LoadConfiguration();
 
-                services.AddSingleton<IApplication, App>();
+                services.AddSingleton<App>();
+                services.AddSingleton<IApplication>(p => p.GetRequiredService<App>());
+                services.AddSingleton<IActionApprover>(x => x.GetRequiredService<App>());
                 services.AddHostedService<WinUIHostedService>();
                 services.AddHostedService<QueuedAssistantService>();
 

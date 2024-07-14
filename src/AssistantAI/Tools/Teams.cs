@@ -35,11 +35,13 @@ public class Teams : ISpecializedAssistant
 
     private GraphServiceClient _graphClient;
     Core.Options.TeamsAssistant _options;
+    IActionApprover _actionApprover;
 
-    public Teams(GraphServiceClient graphClient, IOptions<Core.Options.TeamsAssistant> options)
+    public Teams(GraphServiceClient graphClient, IOptions<Core.Options.TeamsAssistant> options, IActionApprover actionApprover)
     {
         _graphClient = graphClient ?? throw new ArgumentNullException(nameof(graphClient));
         _options = (options ?? throw new ArgumentNullException(nameof(options))).Value;
+        _actionApprover = actionApprover;
     }
 
     #endregion
@@ -65,6 +67,11 @@ public class Teams : ISpecializedAssistant
             c.QueryParameters.Expand = ["members"];
             c.QueryParameters.Filter = $"chatType eq 'oneOnOne' and members/any(o: o/microsoft.graph.aadUserConversationMember/userId eq '{person.GraphId}')";
         });
+
+        var approveResult = await _actionApprover.ApproveAction($"Send message to {person.DisplayName} on Teams chat: {text}");
+        if (!approveResult.isApproved)
+            return $"User declined to send the message after review because: {approveResult.declineReason}";
+
         var sendChatRequest = new SendChatRequest
         {
             GraphClient = _graphClient,
