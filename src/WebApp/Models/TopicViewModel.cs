@@ -2,5 +2,5 @@
 
 public class TopicViewModel
 {
-    public required List<string> TopicFiles { get; init; }
+    public required List<TopicItem> TopicItems { get; init; }
 }

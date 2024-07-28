@@ -1,3 +1,4 @@
+@using WebApp.ContentManagement
 @model WebApp.Models.TopicViewModel
 @{
     ViewData["Title"] = "Home Page";
@@ -5,13 +6,13 @@
 
 <div class="text-center">
     <h1 class="display-4">Welcome to Topic</h1>
-    @foreach(var topicFile in Model.TopicFiles)
-    {
-        <div class="card">
-            <div class="card-body">
-                <p class="card-text">@Html.Raw(File.ReadAllText(topicFile))</p>
-            </div>
-        </div>
-    }
-    
 </div>
+@foreach (var item in Model.TopicItems)
+{
+    <div class="card m-2">
+        <div class="card-body">
+            @Html.Raw(Reader.ReadCard(item.FileName))
+            <a href="@item.RelativePath" class="btn btn-primary stretched-link">Go somewhere</a>
+        </div>
+    </div>
+}

@@ -1,0 +1,6 @@
+﻿@using WebApp.ContentManagement
+@model WebApp.Models.TopicItem
+@{
+}
+
+@Html.Raw(Reader.ReadContent(Model.FileName))
