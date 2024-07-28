@@ -5,29 +5,35 @@ using WebApp.Models;
 namespace WebApp.Controllers;
 
 [AllowAnonymous]
-public class HomeController : Controller
+public class TopicController : Controller
 {
     private readonly ILogger<HomeController> _logger;
 
-    public HomeController(ILogger<HomeController> logger)
+    public TopicController(ILogger<HomeController> logger)
     {
         _logger = logger;
     }
 
-    public Task<IActionResult> Index()
+    [Route("{**topicName}", Order = 100)]
+    public Task<IActionResult> Index(string topicName)
     {
-        return Task.FromResult<IActionResult>(View());
-    }
+#if DEBUG
+        var topicPath = Path.Combine(Directory.GetCurrentDirectory(), "site-content", topicName);
+#else
+        var topicPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "site-content", topicName);
+#endif
+        string[] files;
+        if (Directory.Exists(topicPath))
+        {
+            files = Directory.GetFiles(topicPath, "*.html", SearchOption.AllDirectories);
+            Array.Sort(files);
+        }
+        else
+        {
+            files = Array.Empty<string>();
+        }
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
-
-    [AllowAnonymous]
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        var model = new TopicViewModel() { TopicFiles = files.ToList() };
+        return Task.FromResult<IActionResult>(View(model));
     }
 }

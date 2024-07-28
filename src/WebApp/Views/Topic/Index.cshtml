@@ -1,0 +1,18 @@
+@model WebApp.Models.TopicViewModel
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <p class="card-text">@Directory.GetCurrentDirectory()</p>
+    <h1 class="display-4">Welcome to Topic</h1>
+    @foreach(var topicFile in Model.TopicFiles)
+    {
+        <div class="card">
+            <div class="card-body">
+                <p class="card-text">@Html.Raw(File.ReadAllText(topicFile))</p>
+            </div>
+        </div>
+    }
+    
+</div>

@@ -1,21 +1,33 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebApp.Models;
 
 namespace WebApp.Controllers;
 
 [AllowAnonymous]
-public class TopicController : Controller
+public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
 
-    public TopicController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController> logger)
     {
         _logger = logger;
     }
 
-    [Route("{**topicName}", Order = 100)]
-    public Task<IActionResult> TopicIndex(string topicName)
+    public Task<IActionResult> Index()
     {
-        return Task.FromResult<IActionResult>(View("~/Views/Home/Index.cshtml"));
+        return Task.FromResult<IActionResult>(View());
+    }
+
+    public IActionResult Privacy()
+    {
+        return View();
+    }
+
+    [AllowAnonymous]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult Error()
+    {
+        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }
