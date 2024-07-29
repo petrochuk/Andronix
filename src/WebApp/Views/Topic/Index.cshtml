@@ -4,15 +4,12 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome to Topic</h1>
-</div>
 @foreach (var item in Model.TopicItems)
 {
     <div class="card m-2">
         <div class="card-body">
             @Html.Raw(Reader.ReadCard(item.FileName))
-            <a href="@item.RelativePath" class="btn btn-primary stretched-link">Go somewhere</a>
+            <a href="@item.RelativePath" class="btn btn-primary stretched-link">Read more...</a>
         </div>
     </div>
 }
