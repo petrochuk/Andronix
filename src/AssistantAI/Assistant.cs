@@ -79,6 +79,9 @@ public class Assistant
                     }
                 }
 
+                if (!File.Exists(_assistantOptions.UserSettings))
+                    return new Core.UserSettings();
+
                 var userSettings = JsonSerializer.Deserialize(File.ReadAllText(_assistantOptions.UserSettings), SourceGenerationContext.Default.UserSettings);
                 if (userSettings == null)
                     throw new InvalidOperationException($"Failed to read user settings from {_assistantOptions.UserSettings}");

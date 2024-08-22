@@ -20,6 +20,7 @@ public class AzDevOps : ISpecializedAssistant
     #region Constants
 
     private const string UserStory = "User Story";
+    private const string Task = "Task";
 
     #endregion
 
@@ -82,7 +83,7 @@ public class AzDevOps : ISpecializedAssistant
             },
         };
 
-        var result = client.CreateWorkItemAsync(patchDocument, _options.Project, UserStory).Result;
+        var result = client.CreateWorkItemAsync(patchDocument, _options.Project, Task).Result;
 
         return $"New user story id {result.Id} has been created";
     }
