@@ -15,7 +15,7 @@
         <MicrosoftIdentityVersion>4.63.0</MicrosoftIdentityVersion>
         <MicrosoftGraphVersion>5.56.0</MicrosoftGraphVersion>
         <MicrosoftGraphBetaVersion>5.78.0-preview</MicrosoftGraphBetaVersion>
-        <MicrosoftIdentityWebVersion>3.0.1</MicrosoftIdentityWebVersion>
+        <MicrosoftIdentityWebVersion>3.1.0</MicrosoftIdentityWebVersion>
         <MicrosoftExtensionsOptionsVersion>8.0.2</MicrosoftExtensionsOptionsVersion>
     </PropertyGroup>
 
