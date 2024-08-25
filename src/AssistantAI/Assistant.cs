@@ -170,8 +170,9 @@ public class Assistant
             }
             parameters.Append($" }}");
 
-            var functionDefinition = new FunctionToolDefinition(method.Name, descriptionAttribute.Description)
+            var functionDefinition = new FunctionToolDefinition(method.Name)
             {
+                Description = descriptionAttribute.Description,
                 Parameters = BinaryData.FromString(parameters.ToString())
             };
 
@@ -352,23 +353,19 @@ public class Assistant
         }
         while (!runResponse.Value.Status.IsTerminal);
 
-        var afterRunMessagesResponse = _assistantClient.GetMessages(_openAiAssistantThread.Id, OpenAI.ListOrder.OldestFirst);
+        var afterRunMessagesResponse = _assistantClient.GetMessages(_openAiAssistantThread, new () 
+        {
+            AfterId = _lastDispalayedMessageId,
+            Order = OpenAI.ListOrder.OldestFirst 
+        });
         var dialogHtml = new StringBuilder();
 
         _dialogPresenter.UpdateStatus("Displaying response...");
-        bool skipDisplay = true;
-        foreach (var threadMessage in afterRunMessagesResponse)
+        foreach (var threadMessage in afterRunMessagesResponse.GetAllValues())
         {
             // Skip assistant messages without run id (initial messages)
             if (threadMessage.Role == MessageRole.Assistant && threadMessage.RunId == null)
                 continue;
-
-            if (skipDisplay && !string.IsNullOrWhiteSpace(_lastDispalayedMessageId))
-            {
-                if (threadMessage.Id == _lastDispalayedMessageId)
-                    skipDisplay = false;
-                continue;
-            }
 
             Console.Write($"{threadMessage.CreatedAt:yyyy-MM-dd HH:mm:ss} - {threadMessage.Role,10}: ");
             foreach (MessageContent contentItem in threadMessage.Content)
@@ -379,9 +376,8 @@ public class Assistant
                         dialogHtml.Append($"<div style='color: MediumSeaGreen;'>Assistant: {Markdown.ToHtml(contentItem.Text)}</div>");
                 }
             }
+            _lastDispalayedMessageId = threadMessage.Id;
         }
-
-        _lastDispalayedMessageId = afterRunMessagesResponse.Last().Id;
 
         _dialogPresenter.ShowDialog(dialogHtml.ToString());
         _dialogPresenter.UpdateStatus("Ready");
