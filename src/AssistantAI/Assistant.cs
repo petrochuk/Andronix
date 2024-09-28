@@ -246,7 +246,7 @@ public class Assistant
 
         AddFunctions(creationOptions.Tools);
 
-        var createResponse = await _assistantClient.CreateAssistantAsync("gpt-4o", creationOptions);
+        var createResponse = await _assistantClient.CreateAssistantAsync(_assistantOptions.Model, creationOptions);
         _userSettings.Value.AssistantId = createResponse.Value.Id;
 
         // Save settings to file
@@ -325,6 +325,11 @@ public class Assistant
             _dialogPresenter.UpdateStatus($"Waiting for response...{stopWatch.Elapsed:mm\\:ss}");
             await Task.Delay(TimeSpan.FromMilliseconds(500));
             runResponse = await _assistantClient.GetRunAsync(_openAiAssistantThread.Id, runResponse.Value.Id);
+            if (runResponse.Value.Status == RunStatus.Failed)
+            {
+                _dialogPresenter.UpdateStatus($"Run failed: {runResponse.Value.LastError?.Message}");
+                return;
+            }
             if (runResponse.Value.Status == RunStatus.RequiresAction)
             {
                 List<ToolOutput> toolOutputs = [];

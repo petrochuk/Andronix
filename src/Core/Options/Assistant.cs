@@ -5,6 +5,7 @@
 /// </summary>
 public class Assistant
 {
+    public required string Model { get; set; } = "gpt-4o";
     public required string Name { get; set; }
     public required string Instructions { get; init; }
     public required string AboutMe { get; init; }
