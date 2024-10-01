@@ -36,7 +36,7 @@ public class Assistant
     private Lazy<Core.UserSettings> _userSettings;
     private OpenAI.Assistants.Assistant? _openAiAssistant;
     private OpenAI.Assistants.AssistantThread? _openAiAssistantThread;
-    private OpenAI.Files.FileClient _fileClient;
+    private OpenAI.Files.OpenAIFileClient _fileClient;
     private readonly Dictionary<string, FunctionToolInstance> _functionsMap = new(StringComparer.OrdinalIgnoreCase);
     private readonly Tools.Tasks _tasksTools;
     private readonly Tools.Git _gitTools;
@@ -97,7 +97,7 @@ public class Assistant
         // Clients
         _azureOpenAIClient = new AzureOpenAIClient(_cognitiveOptions.EndPoint, andronixTokenCredential);
         _assistantClient = _azureOpenAIClient.GetAssistantClient();
-        _fileClient = _azureOpenAIClient.GetFileClient();
+        _fileClient = _azureOpenAIClient.GetOpenAIFileClient();
         _graphClient = new Lazy<GraphServiceClient>(() =>
         {
             var graphClient = new GraphServiceClient(authenticationProvider);
@@ -223,9 +223,8 @@ public class Assistant
         IList<string>? assistantFiles = null;
         if (_cognitiveOptions.KnowledgeFiles != null && _cognitiveOptions.KnowledgeFiles.Any())
         {
-            var assistantFilesResult = await _fileClient.GetFilesAsync(OpenAIFilePurpose.Assistants);
+            var assistantFilesResult = await _fileClient.GetFilesAsync(FilePurpose.Assistants);
             assistantFiles = assistantFilesResult.Value
-                .Where (x => x.Status == OpenAIFileStatus.Processed)
                 .Select(x => x.Id).ToList();
         }
         var creationOptions = new AssistantCreationOptions()
@@ -315,8 +314,8 @@ public class Assistant
             throw new InvalidOperationException("Thread not created.");
 
         _dialogPresenter.UpdateStatus("Sending prompt...");
-        await _assistantClient.CreateMessageAsync(_openAiAssistantThread, MessageRole.User, [MessageContent.FromText(prompt)]);
-        var runResponse = await _assistantClient.CreateRunAsync(_openAiAssistantThread, _openAiAssistant);
+        await _assistantClient.CreateMessageAsync(_openAiAssistantThread.Id, MessageRole.User, [MessageContent.FromText(prompt)]);
+        var runResponse = await _assistantClient.CreateRunAsync(_openAiAssistantThread.Id, _openAiAssistant.Id);
 
         var stopWatch = new Stopwatch();
         stopWatch.Start();
@@ -358,15 +357,15 @@ public class Assistant
         }
         while (!runResponse.Value.Status.IsTerminal);
 
-        var afterRunMessagesResponse = _assistantClient.GetMessages(_openAiAssistantThread, new () 
+        var afterRunMessagesResponse = _assistantClient.GetMessages(_openAiAssistantThread.Id, new () 
         {
             AfterId = _lastDispalayedMessageId,
-            Order = OpenAI.ListOrder.OldestFirst 
+            Order = MessageCollectionOrder.Descending
         });
         var dialogHtml = new StringBuilder();
 
         _dialogPresenter.UpdateStatus("Displaying response...");
-        foreach (var threadMessage in afterRunMessagesResponse.GetAllValues())
+        foreach (var threadMessage in afterRunMessagesResponse)
         {
             // Skip assistant messages without run id (initial messages)
             if (threadMessage.Role == MessageRole.Assistant && threadMessage.RunId == null)
