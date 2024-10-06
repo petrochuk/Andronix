@@ -360,7 +360,7 @@ public class Assistant
         var afterRunMessagesResponse = _assistantClient.GetMessages(_openAiAssistantThread.Id, new () 
         {
             AfterId = _lastDispalayedMessageId,
-            Order = MessageCollectionOrder.Descending
+            Order = MessageCollectionOrder.Ascending
         });
         var dialogHtml = new StringBuilder();
 
