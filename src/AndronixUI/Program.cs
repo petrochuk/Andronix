@@ -47,9 +47,11 @@ internal class Program
 
     private static IConfiguration LoadConfiguration()
     {
-        var userAppSettings = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "Andronix", "appSettings.json");
+        var oneDrive = Environment.GetEnvironmentVariable("OneDrive");
+        if (string.IsNullOrWhiteSpace(oneDrive))
+            throw new FileNotFoundException("OneDrive environment variable not found");
+
+        var userAppSettings = Path.Combine(oneDrive, "Assistant", "appSettings.json");
         var builder = new ConfigurationBuilder()
             .SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!)
             .AddJsonFile("appSettings.json", optional: false, reloadOnChange: true)
