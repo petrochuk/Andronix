@@ -245,16 +245,23 @@ public class Assistant
 
         AddFunctions(creationOptions.Tools);
 
-        var createResponse = await _assistantClient.CreateAssistantAsync(_assistantOptions.Model, creationOptions);
-        _userSettings.Value.AssistantId = createResponse.Value.Id;
-
-        // Save settings to file
-        using (var fileStream = File.Create(_assistantOptions.UserSettings))
+        try
         {
-            await JsonSerializer.SerializeAsync(fileStream, _userSettings.Value, SourceGenerationContext.Default.UserSettings);
-        }
+            var createResponse = await _assistantClient.CreateAssistantAsync(_assistantOptions.Model, creationOptions);
+            _userSettings.Value.AssistantId = createResponse.Value.Id;
 
-        _openAiAssistant = createResponse.Value;
+            // Save settings to file
+            using (var fileStream = File.Create(_assistantOptions.UserSettings))
+            {
+                await JsonSerializer.SerializeAsync(fileStream, _userSettings.Value, SourceGenerationContext.Default.UserSettings);
+            }
+
+            _openAiAssistant = createResponse.Value;
+        }
+        catch (Exception ex)
+        {
+            _dialogPresenter.UpdateStatus(ex.Message);
+        }
     }
 
     private void AddFunctions(IList<ToolDefinition> tools)
