@@ -54,8 +54,10 @@ public partial class Git : KnowledgeCollectorBase
             if (IsShuttingDown)
                 return;
 
-            var embedding = _embeddingClient.GenerateEmbedding("Report outage");
-            var results = repoInfo.VectorDB.FindWithDistance(embedding.Value.ToFloats());
+#if DEBUG // Test embedding
+            var embedding = _embeddingClient.GenerateEmbedding("Governance Section for copilot");
+            var results = repoInfo.VectorDB.FindWithDistance(embedding.Value.ToFloats(), maxResultCount: 10);
+#endif
         }
     }
 
@@ -123,7 +125,7 @@ public partial class Git : KnowledgeCollectorBase
         embedding = _embeddingClient.GenerateEmbedding(commit.MessageShort);
         repoInfo.VectorDB.Insert(embedding.Value.ToFloats(), new Sha1(commit.Sha), null);
 
-        ProcessChanges(repoInfo.VectorDB, gitRepo, changes, commit.Sha);
+        ProcessChanges(repoInfo, gitRepo, changes, commit.Sha);
 
         if (repoInfo.VectorDB.Headers.ContainsKey(commitDirection))
             repoInfo.VectorDB.Headers[commitDirection] = commit.Sha;
@@ -136,7 +138,7 @@ public partial class Git : KnowledgeCollectorBase
         Debug.WriteLine($"{commitDirection}: {commit.Sha}");
     }
 
-    private void ProcessChanges(VectorDB<Sha1> vectorDB, Repository repo, TreeChanges changes, string commitSha)
+    private void ProcessChanges(Core.Options.Git.Repository repoInfo, Repository repo, TreeChanges changes, string commitSha)
     {
         foreach (var change in changes)
         {
@@ -145,6 +147,17 @@ public partial class Git : KnowledgeCollectorBase
                 continue;
             if (change.Path.IndexOf("/locales/", StringComparison.OrdinalIgnoreCase) >= 0 &&
                 change.Path.IndexOf("/locales/en-US/", StringComparison.OrdinalIgnoreCase) < 0)
+                continue;
+            bool excluded = false;
+            foreach (var excludedFolder in repoInfo.ExcludedFolders)
+            {
+                if (change.Path.IndexOf(excludedFolder.Key, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    excluded = true;
+                    break;
+                }
+            }
+            if (excluded)
                 continue;
 
             var oldBlob = repo.Lookup<Blob>(change.OldOid);
@@ -192,7 +205,7 @@ public partial class Git : KnowledgeCollectorBase
                 var embeddings = _embeddingClient.GenerateEmbeddings(textBlocks);
                 foreach (var embedding in embeddings.Value)
                 {
-                    vectorDB.Insert(embedding.ToFloats(), new Sha1(commitSha), null);
+                    repoInfo.VectorDB.Insert(embedding.ToFloats(), new Sha1(commitSha), null);
                 }
             }
             else // use batch embeddings
@@ -202,7 +215,7 @@ public partial class Git : KnowledgeCollectorBase
                     var embeddings = _embeddingClient.GenerateEmbeddings(textBlocks.Skip(i).Take(EmbeddingBatchSize));
                     foreach (var embedding in embeddings.Value)
                     {
-                        vectorDB.Insert(embedding.ToFloats(), new Sha1(commitSha), null);
+                        repoInfo.VectorDB.Insert(embedding.ToFloats(), new Sha1(commitSha), null);
                     }
                     if (IsShuttingDown)
                         return;
@@ -218,7 +231,7 @@ public partial class Git : KnowledgeCollectorBase
     const string DataUri = "'data:image/svg+xml;base64,";
 
     /// <summary>
-    /// Cleans the line from special characters and data URIs.
+    /// Cleans the line from special characters and data URIs to save tokens
     /// </summary>
     private string CleanLine(string content)
     {
@@ -232,7 +245,7 @@ public partial class Git : KnowledgeCollectorBase
             else
                 content = content.Remove(index);
         }
-        content = content.Trim([',', ';', ':', '\'', '"', '(', ')', '{', '}', '[', ']']);
+        content = content.Trim([',', ';', ':', '\'', '"', '`', '=', '+', '(', ')', '{', '}', '[', ']']);
 
         content = content.Replace(" { ", " ");
         content = content.Replace(" } ", " ");
@@ -243,6 +256,15 @@ public partial class Git : KnowledgeCollectorBase
         content = content.Replace(" / ", " ");
         content = content.Replace(" % ", " ");
 
+        content = content.Replace(": '", ": ");
+        content = content.Replace(": `${", ": ");
+        content = content.Replace("\": \"", ": ");
+        content = content.Replace("?: ", ": ");
+
+        content = content.Replace("', '", ", ");
+        content = content.Replace("', ", ", ");
+        content = content.Replace(", '", ", ");
+
         content = content.Replace(" == ", " ");
         content = content.Replace(" => ", " ");
         content = content.Replace(" += ", " ");
@@ -251,9 +273,19 @@ public partial class Git : KnowledgeCollectorBase
         content = content.Replace(" /= ", " ");
         content = content.Replace(" %= ", " ");
 
+        content = content.Replace(" const ", " ");
+        content = content.Replace("const ", " ");
+        content = content.Replace(" return ", " ");
+        content = content.Replace("return ", " ");
+
+        content = CompressSpaces().Replace(content, " ");
+
         return content + "\n";
     }
 
     [GeneratedRegex("^[ !@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]*$")]
     private static partial Regex SpecialCharactersOnly();
+
+    [GeneratedRegex("\\s+")]
+    private static partial Regex CompressSpaces();
 }
