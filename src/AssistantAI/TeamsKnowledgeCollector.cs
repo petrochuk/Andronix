@@ -6,14 +6,14 @@ using System.Text.RegularExpressions;
 
 namespace Andronix.AssistantAI;
 
-public partial class TeamsKnowledgeCollector
+public partial class KnowledgeCollectorBase
 {
     private GraphServiceClient _graphClient;
     ManualResetEvent _shutdownEvent = new ManualResetEvent(false);
     Thread _thread;
     Team? _currentTeam;
 
-    public TeamsKnowledgeCollector(IAuthenticationProvider authenticationProvider)
+    public KnowledgeCollectorBase(IAuthenticationProvider authenticationProvider)
     {
         _thread = new Thread(DoWork);
         _graphClient = new GraphServiceClient(authenticationProvider);

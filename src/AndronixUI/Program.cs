@@ -31,10 +31,12 @@ internal class Program
                 services.AddOptions<Core.Options.Assistant>().Bind(configuration.GetSection(nameof(Core.Options.Assistant)));
                 services.AddOptions<TeamsAssistant>().Bind(configuration.GetSection("TeamsAssistant"));
                 services.AddOptions<Core.Options.AzDevOps>().Bind(configuration.GetSection(nameof(Core.Options.AzDevOps)));
+                services.AddOptions<Core.Options.Git>().Bind(configuration.GetSection(nameof(Core.Options.Git)));
 
                 services.AddSingleton<MainWindow>();
                 services.AddSingleton<IDialogPresenter>(provider => provider.GetService<MainWindow>());
-                services.AddSingleton<TeamsKnowledgeCollector>();
+                services.AddSingleton<AssistantAI.KnowledgeCollectors.Git>();
+                services.AddSingleton<KnowledgeCollectorBase>();
                 services.AddSingleton<KnowledgeRepository>();
 
                 services.AddAuthentication(configuration);

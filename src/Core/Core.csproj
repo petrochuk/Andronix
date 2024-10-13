@@ -9,6 +9,7 @@
     
   <ItemGroup>
     <PackageReference Include="Microsoft.Graph.Beta" Version="$(MicrosoftGraphBetaVersion)" />
+    <PackageReference Include="System.Numerics.Tensors" Version="$(SystemNumericsTensorsVersion)" />
   </ItemGroup>
 
 </Project>

@@ -19,7 +19,8 @@ namespace Andronix.UI;
 public partial class App : Application, IApplication, IActionApprover
 {
     private Window _window;
-    private TeamsKnowledgeCollector _intelligenceGatherer;
+    private KnowledgeCollectorBase _intelligenceGatherer;
+    private AssistantAI.KnowledgeCollectors.Git _gitKC;
     private TeamsAssistant _teamsAssistant;
 
     /// <summary>
@@ -52,9 +53,11 @@ public partial class App : Application, IApplication, IActionApprover
             return;
 
         _window = Program.Host.Services.GetRequiredService<MainWindow>();
-        _intelligenceGatherer = Program.Host.Services.GetRequiredService<TeamsKnowledgeCollector>();
+        _gitKC = Program.Host.Services.GetRequiredService<AssistantAI.KnowledgeCollectors.Git>();
+        _intelligenceGatherer = Program.Host.Services.GetRequiredService<KnowledgeCollectorBase>();
         _teamsAssistant = Program.Host.Services.GetRequiredService<TeamsAssistant>();
 #if DEBUG
+        _gitKC.Start();
         //_intelligenceGatherer.Start();
         //_teamsAssistant.Start();
 #endif
@@ -70,6 +73,7 @@ public partial class App : Application, IApplication, IActionApprover
 
     public void OnStopApplication()
     {
+        _gitKC.Stop();
         _intelligenceGatherer.Stop();
         _teamsAssistant.Stop();
     }
