@@ -43,7 +43,7 @@ public class Sha1 : IDataIndex
         if (other is not Sha1 sha1)
             return -1;
 
-        return ((IStructuralComparable)Hash).CompareTo(sha1.Hash, Comparer<byte>.Default); // returns negative value, because rv1 < rv2
+        return ((IStructuralComparable)Hash).CompareTo(sha1.Hash, Comparer<byte>.Default);
     }
 
     public bool Equals(IDataIndex? other)

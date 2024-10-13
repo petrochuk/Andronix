@@ -208,8 +208,14 @@ public class VectorDB<T> : IVectorDB<T> where T : IDataIndex, new()
         fileStream.SetLength(0);
         using var writer = new BinaryWriter(fileStream);
 
-        var header = new VectorDBHeader { Dimensions = _dimensions, Count = _count };
-        header.WriteToStream(writer);
+        var fileHeader = new VectorDBHeader { Dimensions = _dimensions, Count = _count };
+        fileHeader.WriteToStream(writer);
+        writer.Write(Headers.Count);
+        foreach (var header in Headers)
+        {
+            writer.Write(header.Key);
+            writer.Write(header.Value);
+        }
 
         if (_root != null)
             _root.WriteToStream(writer);
@@ -226,6 +232,14 @@ public class VectorDB<T> : IVectorDB<T> where T : IDataIndex, new()
         var header = VectorDBHeader.ReadFromStream(reader);
         _dimensions = header.Dimensions;
         _count = header.Count;
+        int headerCount = reader.ReadInt32();
+        for (var i = 0; i < headerCount; i++)
+        {
+            var key = reader.ReadString();
+            var value = reader.ReadString();
+            Headers.Add(key, value);
+        }
+
         _root = KdTreeNode<T>.ReadFromStream(reader, _dimensions);
     }
 }
