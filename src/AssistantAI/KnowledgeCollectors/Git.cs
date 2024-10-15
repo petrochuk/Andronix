@@ -18,7 +18,8 @@ public partial class Git : KnowledgeCollectorBase
     const int EmbeddingBatchSize = 100;
     readonly static Dictionary<string, string> ExcludedExtensions = new() 
     { 
-        { ".svg", "Scalable Vector Graphics" } 
+        { ".svg", "Scalable Vector Graphics" },
+        { ".snap", "Jest Snapshot" }
     };
 
     private Core.Options.Git _gitOptions;
@@ -228,22 +229,29 @@ public partial class Git : KnowledgeCollectorBase
         }
     }
 
-    const string DataUri = "'data:image/svg+xml;base64,";
-
     /// <summary>
     /// Cleans the line from special characters and data URIs to save tokens
     /// </summary>
     private string CleanLine(string content)
     {
         content = content.Trim();
-        var index = content.IndexOf(DataUri);
-        if (index >= 0)
+        var match = DataImage().Match(content);
+        if (match.Success)
         {
-            var endIndex = content.IndexOf('\'', index + DataUri.Length);
-            if (endIndex >= 0)
-                content = content.Remove(index, endIndex - index + 1);
+            if (match.Index > 0)
+            {
+                var endChar = content[match.Index - 1];
+                var endIndex = content.IndexOf(endChar, match.Index + match.Length);
+                if (endIndex >= 0)
+                    content = content.Remove(match.Index-1, endIndex - match.Index + 2);
+                else
+                    content = content.Remove(match.Index);
+            }
             else
-                content = content.Remove(index);
+            {
+                // Remove until the end of the line
+                content = content.Remove(match.Index);
+            }
         }
         content = content.Trim([',', ';', ':', '\'', '"', '`', '=', '+', '(', ')', '{', '}', '[', ']']);
 
@@ -288,4 +296,7 @@ public partial class Git : KnowledgeCollectorBase
 
     [GeneratedRegex("\\s+")]
     private static partial Regex CompressSpaces();
+
+    [GeneratedRegex("data:image\\/(svg\\+xml|png|jpeg);base64,")]
+    private static partial Regex DataImage();
 }
