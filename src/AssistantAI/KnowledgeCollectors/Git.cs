@@ -56,7 +56,7 @@ public partial class Git : KnowledgeCollectorBase
                 return;
 
 #if DEBUG // Test embedding
-            var embedding = _embeddingClient.GenerateEmbedding("Governance Section for copilot");
+            var embedding = _embeddingClient.GenerateEmbedding("The option to disable 'Tracked to Dynamics 365' for emails is not listed under the settings");
             var results = repoInfo.VectorDB.FindWithDistance(embedding.Value.ToFloats(), maxResultCount: 10);
 #endif
         }
