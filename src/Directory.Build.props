@@ -14,7 +14,7 @@
         <MicrosoftExtensionsVersion>8.0.1</MicrosoftExtensionsVersion>
         <MicrosoftIdentityVersion>4.66.1</MicrosoftIdentityVersion>
         <MicrosoftGraphVersion>5.56.0</MicrosoftGraphVersion>
-        <MicrosoftGraphBetaVersion>5.83.0-preview</MicrosoftGraphBetaVersion>
+        <MicrosoftGraphBetaVersion>5.85.0-preview</MicrosoftGraphBetaVersion>
         <MicrosoftIdentityWebVersion>3.2.2</MicrosoftIdentityWebVersion>
         <MicrosoftExtensionsOptionsVersion>8.0.2</MicrosoftExtensionsOptionsVersion>
         <SystemNumericsTensorsVersion>8.0.0</SystemNumericsTensorsVersion>

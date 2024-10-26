@@ -10,11 +10,11 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0-beta.1" />
-    <PackageReference Include="Markdig" Version="0.37.0" />
+    <PackageReference Include="Markdig" Version="0.38.0" />
     <PackageReference Include="Microsoft.Graph.Beta" Version="$(MicrosoftGraphBetaVersion)" />
     <PackageReference Include="Microsoft.Identity.Client" Version="$(MicrosoftIdentityVersion)" />
     <PackageReference Include="Microsoft.Identity.Client.Broker" Version="$(MicrosoftIdentityVersion)" />
-    <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="19.245.0-preview" />
+    <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="19.246.0-preview" />
     <PackageReference Include="OpenAI" Version="2.1.0-beta.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
