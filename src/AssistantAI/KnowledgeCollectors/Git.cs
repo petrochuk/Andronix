@@ -64,6 +64,9 @@ public partial class Git : KnowledgeCollectorBase
 
     private void ProcessRepository(Core.Options.Git.Repository repoInfo)
     {
+        if (!Directory.Exists(repoInfo.LocalClone))
+            return;
+
         // Read all commits
         using var gitRepo = new Repository(repoInfo.LocalClone);
         repoInfo.VectorDB.Headers.TryGetValue(LastCommit, out var lastCommitSha);

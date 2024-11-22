@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <RootNamespace>Andronix.AssistantAI</RootNamespace>
-    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <NoWarn>OPENAI001</NoWarn>
@@ -16,9 +15,7 @@
     <PackageReference Include="Microsoft.Identity.Client.Broker" Version="$(MicrosoftIdentityVersion)" />
     <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="19.246.0-preview" />
     <PackageReference Include="OpenAI" Version="2.1.0-beta.2" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Security.Cryptography.Xml" Version="8.0.2" />
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
     <PackageReference Include="System.Numerics.Tensors" Version="$(SystemNumericsTensorsVersion)" />
     <PackageReference Include="LibGit2Sharp" Version="0.30.0" />

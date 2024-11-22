@@ -1,5 +1,8 @@
 <Project>
 
+    <PropertyGroup>
+        <TargetFramework Condition="'$(TargetFramework)' == ''">net9.0</TargetFramework>
+    </PropertyGroup>
     <ItemGroup Label="Global usings">
         <Using Include="System" />
         <Using Include="System.Collections.Generic" />
@@ -11,24 +14,24 @@
 
     <PropertyGroup Label="PackageVersions" >
         <AzureIdentityVersion>1.13.1</AzureIdentityVersion>
-        <MicrosoftExtensionsVersion>8.0.1</MicrosoftExtensionsVersion>
-        <MicrosoftIdentityVersion>4.66.1</MicrosoftIdentityVersion>
+        <MicrosoftExtensionsVersion>9.0.0</MicrosoftExtensionsVersion>
+        <MicrosoftIdentityVersion>4.66.2</MicrosoftIdentityVersion>
         <MicrosoftGraphVersion>5.56.0</MicrosoftGraphVersion>
-        <MicrosoftGraphBetaVersion>5.85.0-preview</MicrosoftGraphBetaVersion>
-        <MicrosoftIdentityWebVersion>3.3.1</MicrosoftIdentityWebVersion>
+        <MicrosoftGraphBetaVersion>5.86.0-preview</MicrosoftGraphBetaVersion>
+        <MicrosoftIdentityWebVersion>3.4.0</MicrosoftIdentityWebVersion>
         <MicrosoftExtensionsOptionsVersion>8.0.2</MicrosoftExtensionsOptionsVersion>
-        <SystemNumericsTensorsVersion>8.0.0</SystemNumericsTensorsVersion>
+        <SystemNumericsTensorsVersion>9.0.0</SystemNumericsTensorsVersion>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsVersion)" />
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsVersion)" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(MicrosoftExtensionsVersion)" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsVersion)" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsVersion)" />
-        <PackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsVersion)" />
-        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
-        <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsVersion)" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(MicrosoftExtensionsVersion)" />
+        <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.0" />
     </ItemGroup>
 
 </Project>
