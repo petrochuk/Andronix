@@ -13,14 +13,14 @@
     </ItemGroup>
 
     <PropertyGroup Label="PackageVersions" >
-        <AzureIdentityVersion>1.13.1</AzureIdentityVersion>
-        <MicrosoftExtensionsVersion>9.0.0</MicrosoftExtensionsVersion>
-        <MicrosoftIdentityVersion>4.66.2</MicrosoftIdentityVersion>
+        <AzureIdentityVersion>1.13.2</AzureIdentityVersion>
+        <MicrosoftExtensionsVersion>9.0.2</MicrosoftExtensionsVersion>
+        <MicrosoftIdentityVersion>4.68.0</MicrosoftIdentityVersion>
         <MicrosoftGraphVersion>5.56.0</MicrosoftGraphVersion>
         <MicrosoftGraphBetaVersion>5.86.0-preview</MicrosoftGraphBetaVersion>
-        <MicrosoftIdentityWebVersion>3.4.0</MicrosoftIdentityWebVersion>
+        <MicrosoftIdentityWebVersion>3.7.1</MicrosoftIdentityWebVersion>
         <MicrosoftExtensionsOptionsVersion>8.0.2</MicrosoftExtensionsOptionsVersion>
-        <SystemNumericsTensorsVersion>9.0.0</SystemNumericsTensorsVersion>
+        <SystemNumericsTensorsVersion>9.0.2</SystemNumericsTensorsVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -31,7 +31,7 @@
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsVersion)" />
         <PackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsVersion)" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(MicrosoftExtensionsVersion)" />
-        <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.0" />
+        <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.2" />
     </ItemGroup>
 
 </Project>
